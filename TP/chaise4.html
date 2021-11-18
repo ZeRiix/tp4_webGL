@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>chaise 4 - ZeRiix</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+	</head>
+	<body>
+
+	<style>
+		body{
+			padding: 0;
+			margin: 0;
+		}
+	</style>
+
+		<script type="module">
+
+			import * as THREE from '../build/three.module.js';
+
+			import { GUI } from './jsm/libs/dat.gui.module.js';
+
+			import { OrbitControls } from './jsm/controls/OrbitControls.js';
+            import { FBXLoader } from './jsm/loaders/FBXLoader.js';
+
+			let renderer, scene, camera;
+
+			let spotLight, lightHelper, shadowCameraHelper, AxeHelper;
+
+			let gui;
+
+            let mesh, pied1,pied2,pied3,pied4,barre1,barre2,barreau1,barreau2, circle, circle2;
+            let plateau, plateau2, dossier, sol, plate;
+            let size = 350;
+            let v = true;
+			let showAxeHelper = false;
+			let showCameraHelper = false;
+			let showLightHelper = false;
+			let activateAnimate = false;
+
+            const clock = new THREE.Clock();
+            let mixer;
+
+			function init() {
+
+				renderer = new THREE.WebGLRenderer();
+				renderer.setPixelRatio( window.devicePixelRatio );
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				document.body.appendChild( renderer.domElement );
+
+				renderer.shadowMap.enabled = true;
+
+				renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+				renderer.outputEncoding = THREE.sRGBEncoding;
+
+				scene = new THREE.Scene();
+
+				camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 10000 );
+				camera.position.set( 700, 800, 10 );
+
+				const controls = new OrbitControls( camera, renderer.domElement );
+				controls.addEventListener( 'change', render );
+				controls.minDistance = 20;
+				controls.maxDistance = 5000;
+				controls.enablePan = false;
+
+                controls.keys = {
+	                LEFT: 'ArrowLeft', //left arrow
+	                UP: 'ArrowUp', // up arrow
+	                RIGHT: 'ArrowRight', // right arrow
+	                BOTTOM: 'ArrowDown' // down arrow
+                }
+
+				const ambient = new THREE.AmbientLight( 0xffffff, 0.1 );
+				scene.add( ambient );
+
+				spotLight = new THREE.SpotLight( 0xffffff, 3 );
+				//spotLight.position.set( 200, 700, 100 );
+                spotLight.position.x = 200;
+                spotLight.position.y = 600;
+                spotLight.position.z = 100;
+				spotLight.angle = Math.PI / 4;
+				spotLight.penumbra = 0.5;
+				spotLight.decay = 2;
+				spotLight.distance = 1500;
+
+				spotLight.castShadow = true;
+				spotLight.shadow.mapSize.width = 1024;
+				spotLight.shadow.mapSize.height = 1024;
+				spotLight.shadow.camera.near = 100;
+				spotLight.shadow.camera.far = 100;
+				spotLight.shadow.focus = 1;
+				scene.add( spotLight );
+
+				// ligne lumiere Enable/Disable
+
+				lightHelper = new THREE.SpotLightHelper( spotLight );
+				if (showLightHelper) scene.add(lightHelper);
+
+				// Shadow Helper Enable/Disable
+
+				shadowCameraHelper = new THREE.CameraHelper( spotLight.shadow.camera );
+				if (showCameraHelper) scene.add(shadowCameraHelper);
+
+				//AxesHelper Enable/Disable
+
+				AxeHelper = new THREE.AxesHelper( 10000 );
+				if(showAxeHelper) scene.add(AxeHelper);
+
+
+                //sol
+				let material = new THREE.MeshPhongMaterial( { color: 0xffffff, dithering: true } );
+				let geometry = new THREE.PlaneGeometry( 2000, 2000 );
+				let mesh = new THREE.Mesh( geometry, material );
+				mesh.position.set( 0, - 1, 0 );
+				mesh.rotation.x = - Math.PI * 0.5;
+				mesh.receiveShadow = true;
+				scene.add( mesh );
+
+                //////
+
+                const texture = new THREE.TextureLoader().load( 'textures/metal1.jpg' );
+                const cuir = new THREE.TextureLoader().load( 'textures/cuir1.jpg' );
+
+                //assise
+                const forme1 = new THREE.CylinderGeometry( 100, 90, 20, 32, );
+                const materialH = new THREE.MeshBasicMaterial( { map:cuir } );
+                plateau = new THREE.Mesh( forme1, materialH );//obligatoire
+                plateau.castShadow = true;
+                scene.add( plateau );
+                plateau.position.x = 0;
+                plateau.position.y = 300;
+                plateau.position.z = 0;
+
+                //plate metal
+                const forme10 = new THREE.CylinderGeometry( 100, 91, 20, 32, );
+                const material10 = new THREE.MeshBasicMaterial( { map:texture } );
+                plate = new THREE.Mesh( forme10, material10 );//obligatoire
+                plate.castShadow = true;
+                scene.add( plate );
+                plate.position.x = 0;
+                plate.position.y = 295;
+                plate.position.z = 0;
+
+                //contour assise
+                const forme8 = new THREE.TorusGeometry( 100, 8, 16, 100 );
+                const material8 = new THREE.MeshBasicMaterial( { map:texture } );
+                plateau2 = new THREE.Mesh( forme8, material8 );//obligatoire
+                plateau2.castShadow = true;
+                scene.add( plateau2 );
+                plateau2.rotation.x = 300,8;
+                plateau2.position.y = 300;
+                plateau2.position.z = 0;
+
+                //pied1
+                const forme2 = new THREE.CylinderGeometry( 20, 15, 300, 30 );
+                const material2 = new THREE.MeshBasicMaterial( { map:texture } );
+                pied1 = new THREE.Mesh( forme2, material2 );//obligatoire
+                pied1.castShadow = true;
+                scene.add( pied1 );
+                pied1.position.x = 0;
+                pied1.position.y = 150;
+                pied1.position.z = 0;
+
+                //pied2
+                const forme3 = new THREE.CylinderGeometry( 15, 100, 30, 30 );
+                const material3 = new THREE.MeshBasicMaterial( { map:texture } );
+                pied2 = new THREE.Mesh( forme3, material3 );//obligatoire
+                pied2.castShadow = true;
+                scene.add( pied2 );
+                pied2.position.x = 0;
+                pied2.position.y = 15;
+                pied2.position.z = 0;
+
+                //pied3
+                const forme4 = new THREE.TorusGeometry( 70, 8, 16, 100 );
+                const material4 = new THREE.MeshBasicMaterial( { map:texture } );
+                pied3 = new THREE.Mesh( forme4, material4 );//obligatoire
+                pied3.castShadow = true;
+                scene.add( pied3 );
+                pied3.rotation.x = 300,8;
+                pied3.position.y = 90;
+                pied3.position.z = 0;
+
+                //pied4
+                const forme7 = new THREE.CylinderGeometry( 22, 20, 150, 30 );
+                const material7 = new THREE.MeshBasicMaterial( { map:texture } );
+                pied4 = new THREE.Mesh( forme7, material7 );//obligatoire
+                pied4.castShadow = true;
+                scene.add( pied4 );
+                pied4.position.x = 0;
+                pied4.position.y = 220;
+                pied4.position.z = 0;
+
+                //barre1
+                const barre1Geometry = new THREE.CylinderGeometry( 10, 10, 100,10); // 100
+                //barre1Geometry.geometry.parameters.height = 200;
+                //barre1Material.geometry.parameters.radialSegments = 10;
+                const barre1Material = new THREE.MeshBasicMaterial( { map:texture } );
+                barre1 = new THREE.Mesh( barre1Geometry, barre1Material );//obligatoire
+                barre1.castShadow = true;
+                scene.add( barre1 );
+                barre1.position.x = 100;
+                barre1.position.y = 350; // 350
+                barre1.position.z = 0;
+
+                //barre2
+                const barre2Geometry = new THREE.CylinderGeometry( 10, 10 , 100, 10 ); //100
+                const barre2Material = new THREE.MeshBasicMaterial( { map:texture } );
+                barre2 = new THREE.Mesh( barre2Geometry, barre2Material );//obligatoire
+                barre2.castShadow = true;
+                scene.add( barre2 );
+                barre2.position.x = 0;
+                barre2.position.y = 350; // 350
+                barre2.position.z = 100;
+
+                //barreau1
+                const forme5 = new THREE.BoxGeometry( 140, 20, 8);
+                const material5 = new THREE.MeshBasicMaterial( { map:texture } );
+                barreau1 = new THREE.Mesh( forme5, material5 );//obligatoire
+                barreau1.castShadow = true;
+                scene.add( barreau1 );
+                barreau1.rotation.x = 300,8;
+                barreau1.position.y = 90;
+                barreau1.rotation.z = 300,8;
+
+                //barreau2
+                const forme6 = new THREE.BoxGeometry( 140, 20, 8);
+                const material6 = new THREE.MeshBasicMaterial( { map:texture } );
+                barreau2 = new THREE.Mesh( forme6, material6 );//obligatoire
+                barreau2.castShadow = true;
+                scene.add( barreau2 );
+                barreau2.rotation.x = 300,8;
+                barreau2.position.y = 90;
+                barreau2.position.z = 0;
+
+                //dossier
+                const forme9 = new THREE.TorusGeometry( 100, 20, 16, 100, 2.8);
+                const material9 = new THREE.MeshBasicMaterial( { map:cuir } );
+                dossier = new THREE.Mesh( forme9, material9 );//obligatoire
+                dossier.castShadow = true;
+                scene.add( dossier );
+                dossier.rotation.x = 300,8;
+                dossier.position.y = 383;
+                dossier.position.z = 0;
+                dossier.rotation.z = 4.2;
+
+                //cercle1
+                const geometry15 = new THREE.CircleGeometry( 20, 32 );
+                const material15 = new THREE.MeshBasicMaterial( { map:cuir } );
+                circle = new THREE.Mesh( geometry15, material15 );
+                circle.castShadow = true;
+                scene.add( circle );
+                circle.position.y = 385;
+                circle.rotation.y = 180;
+                circle.position.z = 90;
+                circle.position.x = -45;
+
+                //cercle2
+                const geometry16 = new THREE.CircleGeometry( 20, 32 );
+                const material16 = new THREE.MeshBasicMaterial( { map:cuir } );
+                circle2 = new THREE.Mesh( geometry16, material16 );
+                circle2.castShadow = true;
+                scene.add( circle2 );
+                circle2.position.y = 381;
+                circle2.rotation.y = 180;
+                circle2.position.z = -60;
+                circle2.position.x = 80;
+
+                // model
+				const loader = new FBXLoader();
+				loader.load( 'models/fbx/Dying.fbx', function ( object ) {
+
+					mixer = new THREE.AnimationMixer( object );
+
+					const action = mixer.clipAction( object.animations[ 0 ] );
+					action.play();
+
+					object.traverse( function ( child ) {
+
+						if ( child.isMesh ) {
+
+							child.castShadow = true;
+							child.receiveShadow = true;
+
+						}
+
+					} );
+                    object.position.x = 200;
+                    object.position.y = 0;
+                    object.position.z = 200;
+                    object.scale.x = 3;
+                    object.scale.y = 3;
+                    object.scale.z = 3;
+
+					scene.add( object );
+
+				} );
+                //////
+
+				render();
+
+				window.addEventListener( 'resize', onWindowResize );
+			}
+
+			function onWindowResize() {
+
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+
+				renderer.setSize( window.innerWidth, window.innerHeight );
+
+			}
+
+			function render() {
+
+				lightHelper.update();
+
+				shadowCameraHelper.update();
+
+				renderer.render( scene, camera );
+
+			}
+
+			function buildGui() {
+
+                gui = new GUI();
+
+                const params = {
+                    'light color': spotLight.color.getHex(),
+                    intensity: spotLight.intensity,
+                    puissance: spotLight.distance,
+                    angle: spotLight.angle,
+                    penumbra: spotLight.penumbra,
+                    decay: spotLight.decay,
+                    focus: spotLight.shadow.focus,
+                    distanceY: spotLight.position.y,
+                    distanceX: spotLight.position.x,
+                    distanceZ: spotLight.position.z,
+                    barre : barre1.scale.y,
+                    pied: barreau1.scale.y,
+                    AxeHelper: showAxeHelper,
+                    LightHelper: showLightHelper,
+                    ShadowHelper: showCameraHelper,
+                    Animate: activateAnimate,
+                    bouger: dossier.position.x,
+                };
+
+
+                gui.add( params, 'Animate' ).name( 'Activate Animate' ).onChange(() => {
+                    if(!activateAnimate){
+                        //console.log("Animated");
+                    } else {
+                        //console.log("Not Animated");
+                    }
+                    activateAnimate = !activateAnimate;
+
+                } );
+
+                gui.open();
+
+                const spotLightSettings = gui.addFolder('spotLightSettings');
+
+                spotLightSettings.addColor( params, 'light color' ).onChange( function ( val ) {
+
+                    spotLight.color.setHex( val );
+                    render();
+
+                } );
+
+                spotLightSettings.add( params, 'intensity', 0, 2 ).onChange( function ( val ) {
+
+                    spotLight.intensity = val;
+                    render();
+
+                } );
+
+
+                spotLightSettings.add( params, 'puissance', 50, 2000 ).onChange( function ( val ) {
+
+                    spotLight.distance = val;
+                    render();
+
+                } );
+
+                spotLightSettings.add( params, 'angle', 0, Math.PI / 3 ).onChange( function ( val ) {
+
+                    spotLight.angle = val;
+                    render();
+
+                } );
+
+                spotLightSettings.add( params, 'penumbra', 0, 1 ).onChange( function ( val ) {
+
+                    spotLight.penumbra = val;
+                    render();
+
+                } );
+
+                spotLightSettings.add( params, 'decay', 1, 2 ).onChange( function ( val ) {
+
+                    spotLight.decay = val;
+                    render();
+
+                } );
+
+                spotLightSettings.add( params, 'focus', 0, 1 ).onChange( function ( val ) {
+
+                    spotLight.shadow.focus = val;
+                    render();
+
+                } );
+
+                spotLightSettings.close();
+
+
+                const shadowSettings = gui.addFolder('shadowSettings');
+
+                shadowSettings.add( params, 'distanceY', 0, 1000 ).onChange( function ( val ) {
+
+                    spotLight.position.y = val;
+                    render();
+
+                } );
+                shadowSettings.add( params, 'distanceX', -1000, 1000 ).onChange( function ( val ) {
+
+                    spotLight.position.x = val;
+                    render();
+
+                } );
+                shadowSettings.add( params, 'distanceZ', -1000, 1000 ).onChange( function ( val ) {
+
+                    spotLight.position.z = val;
+                    render();
+
+                } );
+
+                shadowSettings.open();
+
+
+                const chairSettings = gui.addFolder('chairSettings');
+
+                chairSettings.add( params, 'barre', 0.7, 1.49 ).onChange( function ( val ) {
+
+                    barre1.scale.y = val;
+                    barre2.scale.y = val;
+                    barre1.position.y = 300 + 350 * (val/6.9);
+                    barre2.position.y = 300 + 350 * (val/6.9);
+                    dossier.position.y = 320 + 410 * (val/5.5);
+                    circle.position.y = 320 + 410 * (val/5.5);
+                    circle2.position.y = 320 + 410 * (val/5.5);
+
+
+                    render();
+                } );
+                chairSettings.add( params, 'pied', 0.7, 1.49 ).onChange( function ( val ) {
+
+                    pied3.scale.y = val;
+                    pied3.scale.x = val;
+                        barreau2.scale.x = val;
+                    barreau1.scale.x = val;
+
+                    render();
+                } );
+
+                chairSettings.open();
+
+                const Helper = gui.addFolder('Helpers');
+
+                Helper.add( params, 'AxeHelper' ).name( 'Axe Helpers' ).onChange(() => {
+                if(!showAxeHelper){
+                    scene.add(AxeHelper);
+                } else {
+                    scene.remove(AxeHelper);
+                }
+                showAxeHelper = !showAxeHelper;
+
+                } );
+
+                Helper.add( params, 'LightHelper' ).name( 'Light Helpers' ).onChange(() => {
+                    if(!showLightHelper){
+                        scene.add(lightHelper);
+                    } else {
+                        scene.remove(lightHelper);
+                    }
+                    showLightHelper = !showLightHelper;
+
+                } );
+
+                Helper.add( params, 'ShadowHelper' ).name( 'Shadow Helpers' ).onChange(() => {
+                    if(!showCameraHelper){
+                        scene.add(shadowCameraHelper);
+                    } else {
+                        scene.remove(shadowCameraHelper);
+                    }
+                    showCameraHelper = !showCameraHelper;
+
+                } );
+
+                    Helper.close();
+            }
+
+            function animate() { //obligatoire meme si pas animé
+
+                requestAnimationFrame( animate );
+
+                if(activateAnimate === true){
+					scene.rotation.y += 0.003;
+
+
+				} else if (activateAnimate === false) {
+
+				}
+
+                renderer.render( scene, camera );//obligatoire
+            }
+
+			init();
+
+			buildGui();
+
+			render();
+
+            animate();
+
+            //created by @ZeRiix 2021
+
+		</script>
+
+	</body>
+
+</html>

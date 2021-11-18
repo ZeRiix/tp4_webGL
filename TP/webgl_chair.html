@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title>three.js webgl - chair</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<link type="text/css" rel="stylesheet" href="main.css">
+	</head>
+	<body>
+
+		<style>
+
+			body{
+				padding: 0;
+				margin: 0;
+			}
+
+		</style>
+
+		<script type="module">
+
+			import * as THREE from '../build/three.module.js';
+			import { OrbitControls } from './jsm/controls/OrbitControls.js';
+
+
+			// Déclaration des variables
+
+			let camera, scene, renderer;
+			let mesh, foot1, foot2, foot3, foot4, up1, up2, back, armrestL1, armrestL2, armrestR1, armrestR2, leatherL, leatherR, controls, sol;
+
+			init();
+			animate();
+
+			// Position des différents éléments dans la scène
+
+			foot1.position.x = 92;
+			foot1.position.y = 85;
+			foot1.position.z = 92;
+
+			foot2.position.x = -92;
+			foot2.position.y = 85;
+			foot2.position.z = -92;
+
+			foot3.position.x = -92;
+			foot3.position.y = 85;
+			foot3.position.z = 92;
+
+			foot4.position.x = 92;
+			foot4.position.y = 85;
+			foot4.position.z = -92;
+
+			up1.position.x = 92;
+			up1.position.y = -85;
+			up1.position.z = 92;
+
+			up2.position.x = -92;
+			up2.position.y = -85;
+			up2.position.z = 92;
+
+			back.position.x = 0;
+			back.position.y = -135;
+			back.position.z = 92;
+
+			armrestR1.position.x = -92;
+			armrestR1.position.y = -90;
+			armrestR1.position.z = -7;
+
+			armrestR2.position.x = -92;
+			armrestR2.position.y = -42.5;
+			armrestR2.position.z = -92;
+
+			armrestL1.position.x = 92;
+			armrestL1.position.y = -42.5;
+			armrestL1.position.z = -92;
+
+			armrestL2.position.x = 92;
+			armrestL2.position.y = -90;
+			armrestL2.position.z = -7;
+
+			leatherL.position.x = 92;
+			leatherL.position.y = -98;
+			leatherL.position.z = -7;
+
+			leatherR.position.x = -92;
+			leatherR.position.y = -98;
+			leatherR.position.z = -7;
+
+
+
+
+
+			function init() {
+
+				camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 1000 );
+				camera.position.z = 400;
+
+				// Initialisation de la scène
+
+				scene = new THREE.Scene();
+
+
+
+				// Box qui permet de s'assoir
+
+				const texture = new THREE.TextureLoader().load( '../textures/texture-chaise-panier.jpg' );
+				const geometry = new THREE.BoxGeometry( 200, 20, 200 );
+				const material = new THREE.MeshBasicMaterial( { map: texture } );
+
+				// Premier pied de chaise
+
+				const foot1texture = new THREE.TextureLoader().load('../textures/texture-bois-brun.jpg');
+				const foot1geometry = new THREE.BoxGeometry(15, 150, 15);
+				const foot1material = new THREE.MeshBasicMaterial({ map: foot1texture });
+
+				// Deuxième pied de chaise etc..
+
+				const foot2texture = new THREE.TextureLoader().load('../textures/texture-bois-brun.jpg');
+				const foot2geometry = new THREE.BoxGeometry(15, 150, 15);
+				const foot2material = new THREE.MeshBasicMaterial({ map: foot2texture });
+
+				// ****************************
+
+				const foot3texture = new THREE.TextureLoader().load('../textures/texture-bois-brun.jpg');
+				const foot3geometry = new THREE.BoxGeometry(15, 150, 15);
+				const foot3material = new THREE.MeshBasicMaterial({ map: foot3texture });
+
+				// ****************************
+
+				const foot4texture = new THREE.TextureLoader().load('../textures/texture-bois-brun.jpg');
+				const foot4geometry = new THREE.BoxGeometry(15, 150, 15);
+				const foot4material = new THREE.MeshBasicMaterial({ map: foot4texture });
+
+				// Premier pilier haut
+
+				const up1texture = new THREE.TextureLoader().load('../textures/texture-bois-brun.jpg');
+				const up1geometry = new THREE.BoxGeometry(15, 200, 15);
+				const up1material = new THREE.MeshBasicMaterial({ map: up1texture });
+
+				// Deuxième pilier haut
+
+				const up2texture = new THREE.TextureLoader().load('../textures/texture-bois-brun.jpg');
+				const up2geometry = new THREE.BoxGeometry(15, 200, 15);
+				const up2material = new THREE.MeshBasicMaterial({ map: up2texture });
+
+				// Dossier de chaise
+
+				const backtexture = new THREE.TextureLoader().load('../textures/texture-chaise-panier.jpg');
+				const backgeometry = new THREE.BoxGeometry(170, 80, 10);
+				const backmaterial = new THREE.MeshBasicMaterial({ map: backtexture });
+
+
+				// 1er barre gauche
+
+				const armrestL1texture = new THREE.TextureLoader().load('../textures/texture-bois-brun.jpg');
+				const armrestL1geometry = new THREE.BoxGeometry(15, 80, 15);
+				const armrestL1material = new THREE.MeshBasicMaterial({ map: armrestL1texture });
+
+				// 2ème barre gauche
+
+				const armrestL2texture = new THREE.TextureLoader().load('../textures/texture-bois-brun.jpg');
+				const armrestL2geometry = new THREE.BoxGeometry(15, 15, 185);
+				const armrestL2material = new THREE.MeshBasicMaterial({ map: armrestL1texture });
+
+				// 1ème barre droite
+
+				const armrestR1texture = new THREE.TextureLoader().load('../textures/texture-bois-brun.jpg');
+				const armrestR1geometry = new THREE.BoxGeometry(15, 15, 185);
+				const armrestR1material = new THREE.MeshBasicMaterial({ map: armrestR1texture });
+
+				// 2ème barre droite
+
+				const armrestR2texture = new THREE.TextureLoader().load('../textures/texture-bois-brun.jpg');
+				const armrestR2geometry = new THREE.BoxGeometry(15, 80, 15);
+				const armrestR2material = new THREE.MeshBasicMaterial({ map: armrestR2texture });
+
+				// Tissu style cuir gauche
+
+				const leatherLtexture = new THREE.TextureLoader().load('../textures/texture-chaise-panier.jpg');
+				const leatherLgeometry = new THREE.BoxGeometry(15, 1, 184);
+				const leatherLmaterial = new THREE.MeshBasicMaterial({ map: leatherLtexture });
+
+				// Tissu style cuir droite
+
+				const leatherRtexture = new THREE.TextureLoader().load('../textures/texture-chaise-panier.jpg');
+				const leatherRgeometry = new THREE.BoxGeometry(15, 1, 184);
+				const leatherRmaterial = new THREE.MeshBasicMaterial({ map: leatherRtexture });
+
+				// Sol
+
+				const solTexture = new THREE.TextureLoader().load('../textures/texture-parquet.jpg');
+				const solgeometry = new THREE.BoxGeometry(15, 1, 184);
+				const solmaterial = new THREE.MeshBasicMaterial({ map: solTexture });
+
+
+
+				// On ajoute les différents éléments dans la scène avec leur forme et aspect
+
+				mesh = new THREE.Mesh( geometry, material );
+				scene.add( mesh );
+
+				foot1 = new THREE.Mesh( foot1geometry, foot1material);
+				scene.add(foot1);
+
+				foot2 = new THREE.Mesh( foot2geometry, foot2material);
+				scene.add(foot2);
+
+				foot3 = new THREE.Mesh( foot3geometry, foot3material);
+				scene.add(foot3);
+
+				foot4 = new THREE.Mesh( foot4geometry, foot4material);
+				scene.add(foot4);
+
+				up1 = new THREE.Mesh( up1geometry, up1material );
+				scene.add(up1);
+
+				up2 = new THREE.Mesh( up2geometry, up2material );
+				scene.add(up2);
+
+				back = new THREE.Mesh( backgeometry, backmaterial );
+				scene.add(back);
+
+				armrestL1 = new THREE.Mesh( armrestL1geometry, armrestL1material );
+				scene.add(armrestL1);
+
+				armrestL2 = new THREE.Mesh( armrestL2geometry, armrestL2material );
+				scene.add(armrestL2);
+
+				armrestR1 = new THREE.Mesh( armrestR1geometry, armrestR1material );
+				scene.add(armrestR1);
+
+				armrestR2 = new THREE.Mesh( armrestR2geometry, armrestR2material );
+				scene.add(armrestR2);
+
+				leatherL = new THREE.Mesh( leatherLgeometry, leatherLmaterial );
+				scene.add(leatherL);
+
+				leatherR = new THREE.Mesh( leatherRgeometry, leatherRmaterial );
+				scene.add(leatherR);
+
+				sol = new THREE.Mesh( solgeometry, solmaterial );
+				scene.add(sol);
+
+
+
+
+				// On lisse l'image rendu à l'écran
+
+				renderer = new THREE.WebGLRenderer( { antialias: true } );
+				renderer.setPixelRatio( window.devicePixelRatio );
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				document.body.appendChild( renderer.domElement );
+
+				const controls = new OrbitControls( camera, renderer.domElement );
+
+
+
+				window.addEventListener( 'resize', onWindowResize );
+
+			}
+
+			function onWindowResize() {
+
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+
+				renderer.setSize( window.innerWidth, window.innerHeight );
+
+			}
+
+			function animate() {
+
+				requestAnimationFrame( animate );
+
+				//mesh.rotation.x += 0.005;
+				//mesh.rotation.y += 0.01;
+
+				// On créer une rotation autour de la chaise et non l'inverse
+
+				scene.rotation.x += 0.01;
+				scene.rotation.y += 0.005;
+
+				renderer.render( scene, camera );
+
+			}
+
+		</script>
+
+	</body>
+</html>
