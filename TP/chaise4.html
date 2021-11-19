@@ -7,12 +7,85 @@
 	</head>
 	<body>
 
+        <video muted autoplay loop preload="auto" id="background">
+            <source src="./background/background.mp4" class="background-tunnel" type="video/mp4">
+          </video>
+
+	<div id="overlay">
+		<button id="startButton">Play</button>
+	</div>
+
 	<style>
+
+
+        video {
+            max-height: 100%;
+            height: auto;
+            width: 100%;
+        }
+
+        .background-tunnel { 
+ 
+        z-index: -100;
+        background-size: cover;
+        }
+
+        html, body {
+            height: 100%;
+        }
 		body{
 			padding: 0;
-			margin: 0;
+			margin: 0; 
 		}
+
+        #overlay{
+            text-align: center;
+        }
+
+
+		#startButton{
+
+            position: absolute; /* postulat de départ */
+            top: 50%; left: 50%; /* à 50%/50% du parent référent */
+            transform: translate(-50%, -50%); /* décalage de 50% de sa propre taille */
+            background-color: indianred;
+			padding-left: 2.8%;
+			padding-right: 2.8%;
+			padding-top: 1.5%;
+			padding-bottom: 1.5%; 
+            border-radius: 10px;
+            border: 1px solid black;
+            font-family:'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
+            text-transform: uppercase;
+            color: white;
+            font-size: 22px;
+            transform: translateZ(0);
+        
+		}
+
+        /* Pulse */
+
+        @keyframes pulse {
+            25% {
+                transform: scale(1);
+            }
+
+            75% {
+                transform: scale(.9);
+            }
+        }
+
+        #startButton:hover, #startButton:focus {
+            animation-name: pulse;
+            animation-duration: 1s;
+            animation-timing-function: linear;
+            animation-iteration-count: infinite;
+        }
+
+
+
 	</style>
+
 
 		<script type="module">
 
@@ -20,17 +93,27 @@
 
 			import { GUI } from './jsm/libs/dat.gui.module.js';
 
-			import { OrbitControls } from './jsm/controls/OrbitControls.js';
-            import { FBXLoader } from './jsm/loaders/FBXLoader.js';
+			import { FirstPersonControls } from "./jsm/controls/FirstPersonControls.js";
 
-			let renderer, scene, camera;
+			import { OrbitControls } from './jsm/controls/OrbitControls.js';
+
+			import { FBXLoader } from './jsm/loaders/FBXLoader.js';
+
+			let renderer, scene, camera, stats;
 
 			let spotLight, lightHelper, shadowCameraHelper, AxeHelper;
 
-			let gui;
+			let gui, mixer, mixer2;
 
-            let mesh, pied1,pied2,pied3,pied4,barre1,barre2,barreau1,barreau2, circle, circle2;
+			const clock = new THREE.Clock();
+
+			const startButton = document.getElementById( 'startButton' );
+			startButton.addEventListener( 'click', init);
+
+
+			let mesh, pied1,pied2,pied3,pied4,barre1,barre2,barreau1,barreau2, circle, circle2;
             let plateau, plateau2, dossier, sol, plate;
+			let table, box1Table, box2Table;
             let size = 350;
             let v = true;
 			let showAxeHelper = false;
@@ -38,10 +121,12 @@
 			let showLightHelper = false;
 			let activateAnimate = false;
 
-            const clock = new THREE.Clock();
-            let mixer;
+
 
 			function init() {
+
+				const overlay = document.getElementById( 'overlay' );
+				overlay.remove();
 
 				renderer = new THREE.WebGLRenderer();
 				renderer.setPixelRatio( window.devicePixelRatio );
@@ -57,6 +142,15 @@
 
 				camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 10000 );
 				camera.position.set( 700, 800, 10 );
+				camera.position.z = 1200;
+
+				const controlsFirstPerson = new FirstPersonControls( camera, renderer.domElement );
+
+				controlsFirstPerson.movementSpeed = 70;
+				controlsFirstPerson.lookSpeed = 0.05;
+				controlsFirstPerson.noFly = true;
+				controlsFirstPerson.lookVertical = false;
+
 
 				const controls = new OrbitControls( camera, renderer.domElement );
 				controls.addEventListener( 'change', render );
@@ -76,13 +170,13 @@
 
 				spotLight = new THREE.SpotLight( 0xffffff, 3 );
 				//spotLight.position.set( 200, 700, 100 );
-                spotLight.position.x = 200;
-                spotLight.position.y = 600;
-                spotLight.position.z = 100;
+                spotLight.position.x = -1000;
+                spotLight.position.y = 2000;
+                spotLight.position.z = 200;
 				spotLight.angle = Math.PI / 4;
 				spotLight.penumbra = 0.5;
 				spotLight.decay = 2;
-				spotLight.distance = 1500;
+				spotLight.distance = 3500;
 
 				spotLight.castShadow = true;
 				spotLight.shadow.mapSize.width = 1024;
@@ -107,138 +201,155 @@
 				AxeHelper = new THREE.AxesHelper( 10000 );
 				if(showAxeHelper) scene.add(AxeHelper);
 
+				// Texture des objets
+
+				const textureSol = new THREE.TextureLoader().load('../textures/texture-parquet-clair.jpg');
+				const texture = new THREE.TextureLoader().load( '../textures/metal1.jpg' );
+				const cuir = new THREE.TextureLoader().load( '../textures/cuir1.jpg' );
+				const textureTable = new THREE.TextureLoader().load('../textures/texture-table.jpg');
+				const textureBox = new THREE.TextureLoader().load('../textures/texture-box.jpg');
+
 
                 //sol
-				let material = new THREE.MeshPhongMaterial( { color: 0xffffff, dithering: true } );
-				let geometry = new THREE.PlaneGeometry( 2000, 2000 );
+				let material = new THREE.MeshStandardMaterial( { map:textureSol } );
+				let geometry = new THREE.PlaneGeometry( 3000, 3000 );
 				let mesh = new THREE.Mesh( geometry, material );
 				mesh.position.set( 0, - 1, 0 );
 				mesh.rotation.x = - Math.PI * 0.5;
 				mesh.receiveShadow = true;
 				scene.add( mesh );
 
-                //////
 
-                const texture = new THREE.TextureLoader().load( 'textures/metal1.jpg' );
-                const cuir = new THREE.TextureLoader().load( 'textures/cuir1.jpg' );
 
-                //assise
-                const forme1 = new THREE.CylinderGeometry( 100, 90, 20, 32, );
-                const materialH = new THREE.MeshBasicMaterial( { map:cuir } );
-                plateau = new THREE.Mesh( forme1, materialH );//obligatoire
-                plateau.castShadow = true;
+                //assise **
+                const assiseGeometry = new THREE.CylinderGeometry( 100, 120, 20, 32, );
+                const assiseMaterial = new THREE.MeshStandardMaterial( { map:cuir } );
+                plateau = new THREE.Mesh( assiseGeometry, assiseMaterial );//obligatoire
+				plateau.receiveShadow = true;
+				plateau.castShadow = true;
                 scene.add( plateau );
                 plateau.position.x = 0;
                 plateau.position.y = 300;
                 plateau.position.z = 0;
 
-                //plate metal
-                const forme10 = new THREE.CylinderGeometry( 100, 91, 20, 32, );
-                const material10 = new THREE.MeshBasicMaterial( { map:texture } );
-                plate = new THREE.Mesh( forme10, material10 );//obligatoire
+                //plate metal **
+                const plateGeometry = new THREE.CylinderGeometry( 100, 121, 20, 32, );
+                const plateMaterial = new THREE.MeshPhongMaterial( { map:texture } );
+                plate = new THREE.Mesh( plateGeometry, plateMaterial );//obligatoire
                 plate.castShadow = true;
+				plate.receiveShadow = true;
                 scene.add( plate );
                 plate.position.x = 0;
                 plate.position.y = 295;
                 plate.position.z = 0;
 
-                //contour assise
-                const forme8 = new THREE.TorusGeometry( 100, 8, 16, 100 );
-                const material8 = new THREE.MeshBasicMaterial( { map:texture } );
-                plateau2 = new THREE.Mesh( forme8, material8 );//obligatoire
+                //contour assise **
+                const cassiseGeometry = new THREE.TorusGeometry( 120, 8, 16, 100 );
+                const cassiseMaterial = new THREE.MeshPhongMaterial( { map:texture } );
+                plateau2 = new THREE.Mesh( cassiseGeometry, cassiseMaterial );//obligatoire
                 plateau2.castShadow = true;
+				plateau2.receiveShadow = true;
                 scene.add( plateau2 );
                 plateau2.rotation.x = 300,8;
-                plateau2.position.y = 300;
+                plateau2.position.y = 290;
                 plateau2.position.z = 0;
 
-                //pied1
-                const forme2 = new THREE.CylinderGeometry( 20, 15, 300, 30 );
-                const material2 = new THREE.MeshBasicMaterial( { map:texture } );
-                pied1 = new THREE.Mesh( forme2, material2 );//obligatoire
+                //pied1 **
+                const pied1Geometry = new THREE.CylinderGeometry( 20, 15, 300, 30 );
+                const pied1Material = new THREE.MeshPhongMaterial( { map:texture } );
+                pied1 = new THREE.Mesh( pied1Geometry, pied1Material );//obligatoire
                 pied1.castShadow = true;
+				pied1.receiveShadow = true;
                 scene.add( pied1 );
                 pied1.position.x = 0;
                 pied1.position.y = 150;
                 pied1.position.z = 0;
 
-                //pied2
-                const forme3 = new THREE.CylinderGeometry( 15, 100, 30, 30 );
-                const material3 = new THREE.MeshBasicMaterial( { map:texture } );
-                pied2 = new THREE.Mesh( forme3, material3 );//obligatoire
+                //pied2 **
+                const pied2Geometry = new THREE.CylinderGeometry( 15, 100, 30, 30 );
+                const pied2Material = new THREE.MeshPhongMaterial( { map:texture } );
+                pied2 = new THREE.Mesh( pied2Geometry, pied2Material );//obligatoire
                 pied2.castShadow = true;
+				pied2.receiveShadow = true;
                 scene.add( pied2 );
                 pied2.position.x = 0;
                 pied2.position.y = 15;
                 pied2.position.z = 0;
 
                 //pied3
-                const forme4 = new THREE.TorusGeometry( 70, 8, 16, 100 );
-                const material4 = new THREE.MeshBasicMaterial( { map:texture } );
-                pied3 = new THREE.Mesh( forme4, material4 );//obligatoire
+                const pied3Geometry = new THREE.TorusGeometry( 70, 8, 16, 100 );
+                const pied3Material = new THREE.MeshPhongMaterial( { map:texture } );
+                pied3 = new THREE.Mesh( pied3Geometry, pied3Material);//obligatoire
                 pied3.castShadow = true;
+				pied3.receiveShadow = true;
                 scene.add( pied3 );
                 pied3.rotation.x = 300,8;
                 pied3.position.y = 90;
                 pied3.position.z = 0;
 
-                //pied4
-                const forme7 = new THREE.CylinderGeometry( 22, 20, 150, 30 );
-                const material7 = new THREE.MeshBasicMaterial( { map:texture } );
-                pied4 = new THREE.Mesh( forme7, material7 );//obligatoire
+                //pied4 **
+                const pied4Geometry = new THREE.CylinderGeometry( 22, 20, 150, 30 );
+                const pied4Material = new THREE.MeshPhongMaterial( { map:texture } );
+                pied4 = new THREE.Mesh( pied4Geometry, pied4Material );//obligatoire
                 pied4.castShadow = true;
+				pied4.receiveShadow = true;
                 scene.add( pied4 );
                 pied4.position.x = 0;
                 pied4.position.y = 220;
                 pied4.position.z = 0;
 
-                //barre1
+                //barre1 **
                 const barre1Geometry = new THREE.CylinderGeometry( 10, 10, 100,10); // 100
                 //barre1Geometry.geometry.parameters.height = 200;
                 //barre1Material.geometry.parameters.radialSegments = 10;
-                const barre1Material = new THREE.MeshBasicMaterial( { map:texture } );
+                const barre1Material = new THREE.MeshPhongMaterial( { map:texture } );
                 barre1 = new THREE.Mesh( barre1Geometry, barre1Material );//obligatoire
                 barre1.castShadow = true;
+				barre1.receiveShadow = true;
                 scene.add( barre1 );
                 barre1.position.x = 100;
                 barre1.position.y = 350; // 350
                 barre1.position.z = 0;
 
-                //barre2
+                //barre2 **
                 const barre2Geometry = new THREE.CylinderGeometry( 10, 10 , 100, 10 ); //100
-                const barre2Material = new THREE.MeshBasicMaterial( { map:texture } );
+                const barre2Material = new THREE.MeshPhongMaterial( { map:texture } );
                 barre2 = new THREE.Mesh( barre2Geometry, barre2Material );//obligatoire
                 barre2.castShadow = true;
+				barre2.receiveShadow = true;
                 scene.add( barre2 );
                 barre2.position.x = 0;
                 barre2.position.y = 350; // 350
                 barre2.position.z = 100;
 
                 //barreau1
-                const forme5 = new THREE.BoxGeometry( 140, 20, 8);
-                const material5 = new THREE.MeshBasicMaterial( { map:texture } );
-                barreau1 = new THREE.Mesh( forme5, material5 );//obligatoire
+                const barreau1Geometry = new THREE.BoxGeometry( 140, 20, 8);
+                const barreau1Material = new THREE.MeshPhongMaterial( { map:texture } );
+                barreau1 = new THREE.Mesh( barreau1Geometry, barreau1Material );//obligatoire
                 barreau1.castShadow = true;
+				barreau1.receiveShadow = true;
                 scene.add( barreau1 );
                 barreau1.rotation.x = 300,8;
                 barreau1.position.y = 90;
                 barreau1.rotation.z = 300,8;
 
                 //barreau2
-                const forme6 = new THREE.BoxGeometry( 140, 20, 8);
-                const material6 = new THREE.MeshBasicMaterial( { map:texture } );
-                barreau2 = new THREE.Mesh( forme6, material6 );//obligatoire
-                barreau2.castShadow = true;
+                const barreau2Geometry = new THREE.BoxGeometry( 140, 20, 8);
+                const barreau2Material = new THREE.MeshPhongMaterial( { map:texture } );
+                barreau2 = new THREE.Mesh( barreau2Geometry, barreau2Material );//obligatoire
+				barreau2.castShadow = true;
+				barreau2.receiveShadow = true;
                 scene.add( barreau2 );
                 barreau2.rotation.x = 300,8;
                 barreau2.position.y = 90;
                 barreau2.position.z = 0;
 
-                //dossier
-                const forme9 = new THREE.TorusGeometry( 100, 20, 16, 100, 2.8);
-                const material9 = new THREE.MeshBasicMaterial( { map:cuir } );
-                dossier = new THREE.Mesh( forme9, material9 );//obligatoire
-                dossier.castShadow = true;
+                //dossier **
+                const dossierGeometry = new THREE.TorusGeometry( 100, 20, 16, 100, 2.8);
+                const dossierMaterial = new THREE.MeshStandardMaterial( { map:cuir } );
+                dossier = new THREE.Mesh( dossierGeometry, dossierMaterial );//obligatoire
+				dossier.receiveShadow = true;
+				dossier.castShadow = true;
                 scene.add( dossier );
                 dossier.rotation.x = 300,8;
                 dossier.position.y = 383;
@@ -246,9 +357,10 @@
                 dossier.rotation.z = 4.2;
 
                 //cercle1
-                const geometry15 = new THREE.CircleGeometry( 20, 32 );
-                const material15 = new THREE.MeshBasicMaterial( { map:cuir } );
-                circle = new THREE.Mesh( geometry15, material15 );
+                const cercle1Geometry = new THREE.CircleGeometry( 20.5, 32 );
+                const cercle1Material = new THREE.MeshPhongMaterial( { map:cuir } );
+				circle = new THREE.Mesh( cercle1Geometry, cercle1Material );
+				circle.receiveShadow = true;
                 circle.castShadow = true;
                 scene.add( circle );
                 circle.position.y = 385;
@@ -257,19 +369,60 @@
                 circle.position.x = -45;
 
                 //cercle2
-                const geometry16 = new THREE.CircleGeometry( 20, 32 );
-                const material16 = new THREE.MeshBasicMaterial( { map:cuir } );
-                circle2 = new THREE.Mesh( geometry16, material16 );
-                circle2.castShadow = true;
+                const cercle2Geometry = new THREE.CircleGeometry( 20.5, 32 );
+                const cercle2Material = new THREE.MeshPhongMaterial( { map:cuir } );
+                circle2 = new THREE.Mesh( cercle2Geometry, cercle2Material );
+                circle2.receiveShadow = true;
                 scene.add( circle2 );
                 circle2.position.y = 381;
                 circle2.rotation.y = 180;
                 circle2.position.z = -60;
                 circle2.position.x = 80;
 
-                // model
+
+
+
+				// 1er caisson Table
+
+				const box1TableGeometry = new THREE.BoxGeometry( 350, 335, 400);
+				const box1TableMaterial = new THREE.MeshPhongMaterial( { map:textureBox } );
+				box1Table = new THREE.Mesh( box1TableGeometry, box1TableMaterial );//obligatoire
+				box1Table.castShadow = true;
+				box1Table.receiveShadow = true;
+				scene.add( box1Table );
+				box1Table.position.x = 570;
+				box1Table.position.y = 170;
+				box1Table.position.z = 790;
+
+				// 2eme caisson Table
+
+				const box2TableGeometry = new THREE.BoxGeometry( 350, 335, 400);
+				const box2TableMaterial = new THREE.MeshPhongMaterial( { map:textureBox } );
+				box2Table = new THREE.Mesh( box2TableGeometry, box2TableMaterial );//obligatoire
+				box2Table.castShadow = true;
+				box2Table.receiveShadow = true;
+				scene.add( box2Table );
+				box2Table.position.x = 570;
+				box2Table.position.y = 170;
+				box2Table.position.z = -790;
+
+				// Table
+
+				const tableGeometry = new THREE.BoxGeometry( 350, 25, 2000);
+				const tableMaterial = new THREE.MeshPhongMaterial( { map:textureTable } );
+				table = new THREE.Mesh( tableGeometry, tableMaterial );//obligatoire
+				table.castShadow = true;
+				table.receiveShadow = true;
+				scene.add( table );
+				table.position.x = 570;
+				table.position.y = 350;
+				table.position.z = 0;
+
+                //////
+
+				// model
 				const loader = new FBXLoader();
-				loader.load( 'models/fbx/Dying.fbx', function ( object ) {
+				loader.load( 'models/fbx/Drinking.fbx', function ( object ) {
 
 					mixer = new THREE.AnimationMixer( object );
 
@@ -281,26 +434,70 @@
 						if ( child.isMesh ) {
 
 							child.castShadow = true;
-							child.receiveShadow = true;
+
 
 						}
 
 					} );
-                    object.position.x = 200;
-                    object.position.y = 0;
-                    object.position.z = 200;
-                    object.scale.x = 3;
-                    object.scale.y = 3;
-                    object.scale.z = 3;
+
+					object.position.x = 200;
+					object.position.y = 0;
+					object.position.z = -170;
+					object.rotation.y = 360;
+					object.scale.x = 4.8;
+					object.scale.y = 4.8;
+					object.scale.z = 4.8;
 
 					scene.add( object );
 
 				} );
-                //////
+
+                // model 2
+
+				const loader2 = new FBXLoader();
+				loader2.load( 'models/fbx/Talking.fbx', function ( object2 ) {
+
+					mixer2 = new THREE.AnimationMixer( object2 );
+
+					const action = mixer2.clipAction( object2.animations[ 0 ] );
+					action.play();
+
+					object2.traverse( function ( child2 ) {
+
+						if ( child2.isMesh ) {
+
+							child2.castShadow = true;
+							child2.receiveShadow = true;
+
+						}
+
+					} );
+
+					object2.position.x = 850;
+					object2.position.y = 0;
+					object2.position.z = -200;
+					object2.rotation.y = 200;
+					object2.scale.x = 4.8;
+					object2.scale.y = 4.8;
+					object2.scale.z = 4.8;
+
+					scene.add( object2 );
+
+				} );
+
+
+				animate();
+
+				buildGui();
 
 				render();
 
 				window.addEventListener( 'resize', onWindowResize );
+
+				// stats
+				//stats = new Stats();
+				//container.appendChild( stats.dom );
+
 			}
 
 			function onWindowResize() {
@@ -342,17 +539,11 @@
                     AxeHelper: showAxeHelper,
                     LightHelper: showLightHelper,
                     ShadowHelper: showCameraHelper,
-                    Animate: activateAnimate,
-                    bouger: dossier.position.x,
+                    Animate: activateAnimate
                 };
 
 
                 gui.add( params, 'Animate' ).name( 'Activate Animate' ).onChange(() => {
-                    if(!activateAnimate){
-                        //console.log("Animated");
-                    } else {
-                        //console.log("Not Animated");
-                    }
                     activateAnimate = !activateAnimate;
 
                 } );
@@ -368,7 +559,7 @@
 
                 } );
 
-                spotLightSettings.add( params, 'intensity', 0, 2 ).onChange( function ( val ) {
+                spotLightSettings.add( params, 'intensity', 0, 10 ).onChange( function ( val ) {
 
                     spotLight.intensity = val;
                     render();
@@ -447,9 +638,8 @@
                     barre1.position.y = 300 + 350 * (val/6.9);
                     barre2.position.y = 300 + 350 * (val/6.9);
                     dossier.position.y = 320 + 410 * (val/5.5);
-                    circle.position.y = 320 + 410 * (val/5.5);
-                    circle2.position.y = 320 + 410 * (val/5.5);
-
+					circle2.position.y = 320 + 410 * (val/5.5);
+					circle.position.y = 320 + 410 * (val/5.5);
 
                     render();
                 } );
@@ -457,7 +647,7 @@
 
                     pied3.scale.y = val;
                     pied3.scale.x = val;
-                        barreau2.scale.x = val;
+					barreau2.scale.x = val;
                     barreau1.scale.x = val;
 
                     render();
@@ -504,6 +694,11 @@
 
                 requestAnimationFrame( animate );
 
+				const delta = clock.getDelta();
+
+				if ( mixer ) mixer.update( delta );
+                if ( mixer2 ) mixer2.update( delta );
+
                 if(activateAnimate === true){
 					scene.rotation.y += 0.003;
 
@@ -512,16 +707,15 @@
 
 				}
 
+				//stats.update();
+
                 renderer.render( scene, camera );//obligatoire
             }
 
-			init();
 
-			buildGui();
 
 			render();
 
-            animate();
 
             //created by @ZeRiix 2021
 
