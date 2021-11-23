@@ -114,7 +114,7 @@
 
 			import { FBXLoader } from './jsm/loaders/FBXLoader.js';
 
-			let renderer, scene, camera, stats;
+			let renderer, scene, camera, stats, controls, controlsFirstPerson;
 
 			let spotLight, lightHelper, shadowCameraHelper, AxeHelper;
 
@@ -141,13 +141,7 @@
 
 			function init() {
 
-                const backgroundVid = document.getElementById('bg');
-                backgroundVid.remove();
-
-				const overlay = document.getElementById( 'overlay' );
-				overlay.remove();
-
-				renderer = new THREE.WebGLRenderer();
+                renderer = new THREE.WebGLRenderer();
 				renderer.setPixelRatio( window.devicePixelRatio );
 				renderer.setSize( window.innerWidth, window.innerHeight );
 				document.body.appendChild( renderer.domElement );
@@ -157,21 +151,35 @@
 				renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 				renderer.outputEncoding = THREE.sRGBEncoding;
 
+                const backgroundVid = document.getElementById('bg');
+                backgroundVid.remove();
+
+				const overlay = document.getElementById( 'overlay' );
+				overlay.remove();
+
 				scene = new THREE.Scene();
 
 				camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 10000 );
 				camera.position.set( 700, 800, 10 );
 				camera.position.z = 1200;
 
-				const controlsFirstPerson = new FirstPersonControls( camera, renderer.domElement );
+				controlsFirstPerson = new FirstPersonControls( camera, renderer.domElement );
 
-				controlsFirstPerson.movementSpeed = 70;
-				controlsFirstPerson.lookSpeed = 0.05;
+				controlsFirstPerson.movementSpeed = 500;
+				controlsFirstPerson.lookSpeed = 0.10;
 				controlsFirstPerson.noFly = true;
 				controlsFirstPerson.lookVertical = false;
+                controlsFirstPerson.lookHorizontal = false;
+
+                controlsFirstPerson.keys = {
+	                LEFT: 'ArrowLeft', //left arrow
+	                UP: 'ArrowUp', // up arrow
+	                RIGHT: 'ArrowRight', // right arrow
+	                BOTTOM: 'ArrowDown' // down arrow
+                }
 
 
-				const controls = new OrbitControls( camera, renderer.domElement );
+				controls = new OrbitControls( camera, renderer.domElement );
 				controls.addEventListener( 'change', render );
 				controls.minDistance = 20;
 				controls.maxDistance = 5000;
@@ -441,7 +449,7 @@
 
 				// model
 				const loader = new FBXLoader();
-				loader.load( 'models/fbx/Drinking.fbx', function ( object ) {
+				loader.load( './models/fbx/Drinking.fbx', function ( object ) {
 
 					mixer = new THREE.AnimationMixer( object );
 
@@ -474,7 +482,7 @@
                 // model 2
 
 				const loader2 = new FBXLoader();
-				loader2.load( 'models/fbx/Talking.fbx', function ( object2 ) {
+				loader2.load( './models/fbx/Talking.fbx', function ( object2 ) {
 
 					mixer2 = new THREE.AnimationMixer( object2 );
 
@@ -505,17 +513,12 @@
 				} );
 
 
-				animate();
-
-				buildGui();
-
-				render();
-
 				window.addEventListener( 'resize', onWindowResize );
 
-				// stats
-				//stats = new Stats();
-				//container.appendChild( stats.dom );
+                buildGui();
+
+                animate();
+
 
 			}
 
@@ -526,9 +529,15 @@
 
 				renderer.setSize( window.innerWidth, window.innerHeight );
 
+                controlsFirstPerson.handleResize();
+
 			}
 
 			function render() {
+
+                const delta = clock.getDelta();
+
+                controlsFirstPerson.update( delta );
 
 				lightHelper.update();
 
@@ -711,29 +720,27 @@
 
             function animate() { //obligatoire meme si pas animé
 
-                requestAnimationFrame( animate );
-
-				const delta = clock.getDelta();
+                render();
 
 				if ( mixer ) mixer.update( delta );
                 if ( mixer2 ) mixer2.update( delta );
 
                 if(activateAnimate === true){
 					scene.rotation.y += 0.003;
+                } else if (activateAnimate === false) {
 
-
-				} else if (activateAnimate === false) {
-
-				}
-
-				//stats.update();
+                }
 
                 renderer.render( scene, camera );//obligatoire
+
+                requestAnimationFrame( animate );
+
+                render();
             }
 
 
+            
 
-			render();
 
 
             //created by @ZeRiix 2021
