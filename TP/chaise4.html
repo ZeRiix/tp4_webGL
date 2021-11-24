@@ -44,6 +44,8 @@
     
 
         html, body {
+            overflow-y: hidden;
+            overflow-x: hidden;
             height: 100%;
         }
 		body{
@@ -110,7 +112,7 @@
 
 			import { FirstPersonControls } from "./jsm/controls/FirstPersonControls.js";
 
-			import { OrbitControls } from './jsm/controls/OrbitControls.js';
+			/*import { OrbitControls } from './jsm/controls/OrbitControls.js';*/
 
 			import { FBXLoader } from './jsm/loaders/FBXLoader.js';
 
@@ -121,6 +123,7 @@
 			let gui, mixer, mixer2;
 
 			const clock = new THREE.Clock();
+
 
 			const startButton = document.getElementById( 'startButton' );
             startButton.addEventListener( 'click', init);
@@ -137,19 +140,219 @@
 			let showLightHelper = false;
 			let activateAnimate = false;
 
+        
+
+            function render() {
+
+
+                controls.update( clock.getDelta() );
+
+                lightHelper.update();
+
+                shadowCameraHelper.update();
+
+                renderer.render( scene, camera );
+
+            }
+
+            function buildGui() {
+
+            gui = new GUI();
+
+            const params = {
+                'light color': spotLight.color.getHex(),
+                intensity: spotLight.intensity,
+                puissance: spotLight.distance,
+                angle: spotLight.angle,
+                penumbra: spotLight.penumbra,
+                decay: spotLight.decay,
+                focus: spotLight.shadow.focus,
+                distanceY: spotLight.position.y,
+                distanceX: spotLight.position.x,
+                distanceZ: spotLight.position.z,
+                barre : barre1.scale.y,
+                pied: barreau1.scale.y,
+                AxeHelper: showAxeHelper,
+                LightHelper: showLightHelper,
+                ShadowHelper: showCameraHelper,
+                Animate: activateAnimate
+            };
+
+
+            gui.add( params, 'Animate' ).name( 'Activate Animate' ).onChange(() => {
+                activateAnimate = !activateAnimate;
+
+            } );
+
+            gui.open();
+
+            const spotLightSettings = gui.addFolder('spotLightSettings');
+
+            spotLightSettings.addColor( params, 'light color' ).onChange( function ( val ) {
+
+                spotLight.color.setHex( val );
+                render();
+
+            } );
+
+            spotLightSettings.add( params, 'intensity', 0, 10 ).onChange( function ( val ) {
+
+                spotLight.intensity = val;
+                render();
+
+            } );
+
+
+            spotLightSettings.add( params, 'puissance', 50, 2000 ).onChange( function ( val ) {
+
+                spotLight.distance = val;
+                render();
+
+            } );
+
+            spotLightSettings.add( params, 'angle', 0, Math.PI / 3 ).onChange( function ( val ) {
+
+                spotLight.angle = val;
+                render();
+
+            } );
+
+            spotLightSettings.add( params, 'penumbra', 0, 1 ).onChange( function ( val ) {
+
+                spotLight.penumbra = val;
+                render();
+
+            } );
+
+            spotLightSettings.add( params, 'decay', 1, 2 ).onChange( function ( val ) {
+
+                spotLight.decay = val;
+                render();
+
+            } );
+
+            spotLightSettings.add( params, 'focus', 0, 1 ).onChange( function ( val ) {
+
+                spotLight.shadow.focus = val;
+                render();
+
+            } );
+
+            spotLightSettings.close();
+
+
+            const shadowSettings = gui.addFolder('shadowSettings');
+
+            shadowSettings.add( params, 'distanceY', 0, 1000 ).onChange( function ( val ) {
+
+                spotLight.position.y = val;
+                render();
+
+            } );
+            shadowSettings.add( params, 'distanceX', -1000, 1000 ).onChange( function ( val ) {
+
+                spotLight.position.x = val;
+                render();
+
+            } );
+            shadowSettings.add( params, 'distanceZ', -1000, 1000 ).onChange( function ( val ) {
+
+                spotLight.position.z = val;
+                render();
+
+            } );
+
+            shadowSettings.open();
+
+
+            const chairSettings = gui.addFolder('chairSettings');
+
+            chairSettings.add( params, 'barre', 0.7, 1.49 ).onChange( function ( val ) {
+
+                barre1.scale.y = val;
+                barre2.scale.y = val;
+                barre1.position.y = 300 + 350 * (val/6.9);
+                barre2.position.y = 300 + 350 * (val/6.9);
+                dossier.position.y = 320 + 410 * (val/5.5);
+                circle2.position.y = 320 + 410 * (val/5.5);
+                circle.position.y = 320 + 410 * (val/5.5);
+
+                render();
+            } );
+            chairSettings.add( params, 'pied', 0.7, 1.49 ).onChange( function ( val ) {
+
+                pied3.scale.y = val;
+                pied3.scale.x = val;
+                barreau2.scale.x = val;
+                barreau1.scale.x = val;
+
+                render();
+            } );
+
+            chairSettings.open();
+
+            const Helper = gui.addFolder('Helpers');
+
+            Helper.add( params, 'AxeHelper' ).name( 'Axe Helpers' ).onChange(() => {
+            if(!showAxeHelper){
+                scene.add(AxeHelper);
+            } else {
+                scene.remove(AxeHelper);
+            }
+            showAxeHelper = !showAxeHelper;
+
+            } );
+
+            Helper.add( params, 'LightHelper' ).name( 'Light Helpers' ).onChange(() => {
+                if(!showLightHelper){
+                    scene.add(lightHelper);
+                } else {
+                    scene.remove(lightHelper);
+                }
+                showLightHelper = !showLightHelper;
+
+            } );
+
+            Helper.add( params, 'ShadowHelper' ).name( 'Shadow Helpers' ).onChange(() => {
+                if(!showCameraHelper){
+                    scene.add(shadowCameraHelper);
+                } else {
+                    scene.remove(shadowCameraHelper);
+                }
+                showCameraHelper = !showCameraHelper;
+
+            } );
+
+                Helper.close();
+            }
+
+            function animate() { 
+
+                requestAnimationFrame( animate );
+
+                const delta = clock.getDelta();
+
+                if ( mixer ) mixer.update( delta );
+                if ( mixer2 ) mixer2.update( delta );
+
+                if(activateAnimate === true){
+                    scene.rotation.y += 0.003;
+                } else if (activateAnimate === false) {
+
+                }
+
+                renderer.render( scene, camera );//obligatoire
+
+                render();
+
+            }
+
 
 
 			function init() {
 
-                renderer = new THREE.WebGLRenderer();
-				renderer.setPixelRatio( window.devicePixelRatio );
-				renderer.setSize( window.innerWidth, window.innerHeight );
-				document.body.appendChild( renderer.domElement );
-
-				renderer.shadowMap.enabled = true;
-
-				renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-				renderer.outputEncoding = THREE.sRGBEncoding;
+                const container = document.createElement( 'div' );
+				document.body.appendChild( container );
 
                 const backgroundVid = document.getElementById('bg');
                 backgroundVid.remove();
@@ -162,35 +365,6 @@
 				camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 10000 );
 				camera.position.set( 700, 800, 10 );
 				camera.position.z = 1200;
-
-				controlsFirstPerson = new FirstPersonControls( camera, renderer.domElement );
-
-				controlsFirstPerson.movementSpeed = 500;
-				controlsFirstPerson.lookSpeed = 0.10;
-				controlsFirstPerson.noFly = true;
-				controlsFirstPerson.lookVertical = false;
-                controlsFirstPerson.lookHorizontal = false;
-
-                controlsFirstPerson.keys = {
-	                LEFT: 'ArrowLeft', //left arrow
-	                UP: 'ArrowUp', // up arrow
-	                RIGHT: 'ArrowRight', // right arrow
-	                BOTTOM: 'ArrowDown' // down arrow
-                }
-
-
-				controls = new OrbitControls( camera, renderer.domElement );
-				controls.addEventListener( 'change', render );
-				controls.minDistance = 20;
-				controls.maxDistance = 5000;
-				controls.enablePan = false;
-
-                controls.keys = {
-	                LEFT: 'ArrowLeft', //left arrow
-	                UP: 'ArrowUp', // up arrow
-	                RIGHT: 'ArrowRight', // right arrow
-	                BOTTOM: 'ArrowDown' // down arrow
-                }
 
 				const ambient = new THREE.AmbientLight( 0xffffff, 0.1 );
 				scene.add( ambient );
@@ -448,8 +622,9 @@
                 //////
 
 				// model
+
 				const loader = new FBXLoader();
-				loader.load( './models/fbx/Drinking.fbx', function ( object ) {
+				loader.load( 'models/fbx/Drinking.fbx', function ( object ) {
 
 					mixer = new THREE.AnimationMixer( object );
 
@@ -461,6 +636,7 @@
 						if ( child.isMesh ) {
 
 							child.castShadow = true;
+							child.receiveShadow = true;
 
 
 						}
@@ -482,7 +658,7 @@
                 // model 2
 
 				const loader2 = new FBXLoader();
-				loader2.load( './models/fbx/Talking.fbx', function ( object2 ) {
+				loader2.load( 'models/fbx/Talking.fbx', function ( object2 ) {
 
 					mixer2 = new THREE.AnimationMixer( object2 );
 
@@ -512,231 +688,80 @@
 
 				} );
 
+                renderer = new THREE.WebGLRenderer();
+				renderer.setPixelRatio( window.devicePixelRatio );
+				renderer.setSize( window.innerWidth, window.innerHeight );
+		        renderer.shadowMap.enabled = true;
+                container.appendChild( renderer.domElement );
+
+				renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+				renderer.outputEncoding = THREE.sRGBEncoding;
+
+                /*controlsFirstPerson = new FirstPersonControls( camera, renderer.domElement );
+
+				controlsFirstPerson.movementSpeed = 500;
+				controlsFirstPerson.lookSpeed = 0.10;
+				controlsFirstPerson.noFly = true;
+				controlsFirstPerson.lookVertical = false;
+                controlsFirstPerson.lookHorizontal = false;
+
+                controlsFirstPerson.keys = {
+	                LEFT: 'ArrowLeft', //left arrow
+	                UP: 'ArrowUp', // up arrow
+	                RIGHT: 'ArrowRight', // right arrow
+	                BOTTOM: 'ArrowDown' // down arrow
+                }*/
+
+
+				/*controls = new OrbitControls( camera, renderer.domElement );
+				controls.addEventListener( 'change', render );
+				controls.minDistance = 20;
+				controls.maxDistance = 5000;
+				controls.enablePan = false;
+
+                controls.keys = {
+	                LEFT: 'ArrowLeft', //left arrow
+	                UP: 'ArrowUp', // up arrow
+	                RIGHT: 'ArrowRight', // right arrow
+	                BOTTOM: 'ArrowDown' // down arrow
+                }*/
+
+                controls = new FirstPersonControls( camera, renderer.domElement );
+
+				controls.movementSpeed = 1500;
+				controls.lookSpeed = 0.3;
+				controls.noFly = true;
+				controls.lookVertical = true;
+                controls.lookHorizontal = true;
+
+                controls.keys = {
+	                LEFT: 'keyQ', //left arrow
+	                UP: 'keyZ', // up arrow
+	                RIGHT: 'keyR', // right arrow
+	                BOTTOM: 'keyS' // down arrow
+                }
+
 
 				window.addEventListener( 'resize', onWindowResize );
 
                 buildGui();
 
+
                 animate();
 
-
-			}
-
-			function onWindowResize() {
-
-				camera.aspect = window.innerWidth / window.innerHeight;
-				camera.updateProjectionMatrix();
-
-				renderer.setSize( window.innerWidth, window.innerHeight );
-
-                controlsFirstPerson.handleResize();
-
-			}
-
-			function render() {
-
-                const delta = clock.getDelta();
-
-                controlsFirstPerson.update( delta );
-
-				lightHelper.update();
-
-				shadowCameraHelper.update();
-
-				renderer.render( scene, camera );
-
-			}
-
-			function buildGui() {
-
-                gui = new GUI();
-
-                const params = {
-                    'light color': spotLight.color.getHex(),
-                    intensity: spotLight.intensity,
-                    puissance: spotLight.distance,
-                    angle: spotLight.angle,
-                    penumbra: spotLight.penumbra,
-                    decay: spotLight.decay,
-                    focus: spotLight.shadow.focus,
-                    distanceY: spotLight.position.y,
-                    distanceX: spotLight.position.x,
-                    distanceZ: spotLight.position.z,
-                    barre : barre1.scale.y,
-                    pied: barreau1.scale.y,
-                    AxeHelper: showAxeHelper,
-                    LightHelper: showLightHelper,
-                    ShadowHelper: showCameraHelper,
-                    Animate: activateAnimate
-                };
-
-
-                gui.add( params, 'Animate' ).name( 'Activate Animate' ).onChange(() => {
-                    activateAnimate = !activateAnimate;
-
-                } );
-
-                gui.open();
-
-                const spotLightSettings = gui.addFolder('spotLightSettings');
-
-                spotLightSettings.addColor( params, 'light color' ).onChange( function ( val ) {
-
-                    spotLight.color.setHex( val );
-                    render();
-
-                } );
-
-                spotLightSettings.add( params, 'intensity', 0, 10 ).onChange( function ( val ) {
-
-                    spotLight.intensity = val;
-                    render();
-
-                } );
-
-
-                spotLightSettings.add( params, 'puissance', 50, 2000 ).onChange( function ( val ) {
-
-                    spotLight.distance = val;
-                    render();
-
-                } );
-
-                spotLightSettings.add( params, 'angle', 0, Math.PI / 3 ).onChange( function ( val ) {
-
-                    spotLight.angle = val;
-                    render();
-
-                } );
-
-                spotLightSettings.add( params, 'penumbra', 0, 1 ).onChange( function ( val ) {
-
-                    spotLight.penumbra = val;
-                    render();
-
-                } );
-
-                spotLightSettings.add( params, 'decay', 1, 2 ).onChange( function ( val ) {
-
-                    spotLight.decay = val;
-                    render();
-
-                } );
-
-                spotLightSettings.add( params, 'focus', 0, 1 ).onChange( function ( val ) {
-
-                    spotLight.shadow.focus = val;
-                    render();
-
-                } );
-
-                spotLightSettings.close();
-
-
-                const shadowSettings = gui.addFolder('shadowSettings');
-
-                shadowSettings.add( params, 'distanceY', 0, 1000 ).onChange( function ( val ) {
-
-                    spotLight.position.y = val;
-                    render();
-
-                } );
-                shadowSettings.add( params, 'distanceX', -1000, 1000 ).onChange( function ( val ) {
-
-                    spotLight.position.x = val;
-                    render();
-
-                } );
-                shadowSettings.add( params, 'distanceZ', -1000, 1000 ).onChange( function ( val ) {
-
-                    spotLight.position.z = val;
-                    render();
-
-                } );
-
-                shadowSettings.open();
-
-
-                const chairSettings = gui.addFolder('chairSettings');
-
-                chairSettings.add( params, 'barre', 0.7, 1.49 ).onChange( function ( val ) {
-
-                    barre1.scale.y = val;
-                    barre2.scale.y = val;
-                    barre1.position.y = 300 + 350 * (val/6.9);
-                    barre2.position.y = 300 + 350 * (val/6.9);
-                    dossier.position.y = 320 + 410 * (val/5.5);
-					circle2.position.y = 320 + 410 * (val/5.5);
-					circle.position.y = 320 + 410 * (val/5.5);
-
-                    render();
-                } );
-                chairSettings.add( params, 'pied', 0.7, 1.49 ).onChange( function ( val ) {
-
-                    pied3.scale.y = val;
-                    pied3.scale.x = val;
-					barreau2.scale.x = val;
-                    barreau1.scale.x = val;
-
-                    render();
-                } );
-
-                chairSettings.open();
-
-                const Helper = gui.addFolder('Helpers');
-
-                Helper.add( params, 'AxeHelper' ).name( 'Axe Helpers' ).onChange(() => {
-                if(!showAxeHelper){
-                    scene.add(AxeHelper);
-                } else {
-                    scene.remove(AxeHelper);
-                }
-                showAxeHelper = !showAxeHelper;
-
-                } );
-
-                Helper.add( params, 'LightHelper' ).name( 'Light Helpers' ).onChange(() => {
-                    if(!showLightHelper){
-                        scene.add(lightHelper);
-                    } else {
-                        scene.remove(lightHelper);
-                    }
-                    showLightHelper = !showLightHelper;
-
-                } );
-
-                Helper.add( params, 'ShadowHelper' ).name( 'Shadow Helpers' ).onChange(() => {
-                    if(!showCameraHelper){
-                        scene.add(shadowCameraHelper);
-                    } else {
-                        scene.remove(shadowCameraHelper);
-                    }
-                    showCameraHelper = !showCameraHelper;
-
-                } );
-
-                    Helper.close();
             }
 
-            function animate() { //obligatoire meme si pas animé
+            function onWindowResize() {
 
-                render();
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
 
-				if ( mixer ) mixer.update( delta );
-                if ( mixer2 ) mixer2.update( delta );
+                renderer.setSize( window.innerWidth, window.innerHeight );
 
-                if(activateAnimate === true){
-					scene.rotation.y += 0.003;
-                } else if (activateAnimate === false) {
+                controls.handleResize();
 
-                }
+}
 
-                renderer.render( scene, camera );//obligatoire
-
-                requestAnimationFrame( animate );
-
-                render();
-            }
 
 
             
