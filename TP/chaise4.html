@@ -139,6 +139,7 @@
 			let showCameraHelper = false;
 			let showLightHelper = false;
 			let activateAnimate = false;
+            let boutonInteract;
 
         
 
@@ -618,6 +619,22 @@
 				table.position.x = 570;
 				table.position.y = 350;
 				table.position.z = 0;
+
+                // objet interaction
+
+                const boutonInteractGeometry = new THREE.BoxGeometry(50, 50, 50);
+                const boutonInteractMaterial = new THREE.MeshPhongMaterial( { map:textureTable } );
+				boutonInteract = new THREE.Mesh( boutonInteractGeometry, boutonInteractMaterial );//obligatoire
+				boutonInteract.castShadow = true;
+				boutonInteract.receiveShadow = true;
+				scene.add( boutonInteract );
+				boutonInteract.position.x = 300;
+				boutonInteract.position.y = 350;
+				boutonInteract.position.z = 0;
+
+                boutonInteract.addEventListener('onclick', console.log("boutonInteract !"));        
+
+                
 
                 //////
 
