@@ -140,7 +140,7 @@
 
 			let mesh, pied1,pied2,pied3,pied4,barre1,barre2,barreau1,barreau2, circle, circle2;
             let plateau, plateau2, dossier, sol, plate;
-			let table, box1Table, box2Table;
+			let table, box1Table, box2Table, porte, porte2;
             let size = 350;
             let v = true;
 			let showAxeHelper = false;
@@ -149,6 +149,8 @@
 			let activateAnimate = false;
             let raycaster, intersects;
             let pointer, INTERSECTED;
+            let isShiftDown = false;
+            let interrupteur = false;
 
 
             function render() {
@@ -626,9 +628,6 @@
                 circle2.position.z = -60;
                 circle2.position.x = 80;
 
-
-
-
 				// 1er caisson Table
 
 				const box1TableGeometry = new THREE.BoxGeometry( 350, 335, 400);
@@ -665,7 +664,39 @@
 				table.position.y = 350;
 				table.position.z = 0;
 
+                // porte
+
+                const porteGeometry = new THREE.BoxGeometry(600, 1200, 30);
+                const porteMaterial = new THREE.MeshPhongMaterial( { map:textureTable } );
+                porte = new THREE.Mesh( porteGeometry, porteMaterial );//obligatoire*
+                porte.castShadow = true;
+				porte.receiveShadow = true;
+				scene.add( porte );
+				porte.position.x = 0;
+				porte.position.y = 550;
+				porte.position.z = 1450;
+
+                // porte
+
+                const porte2Geometry = new THREE.BoxGeometry(600, 1200, 30);
+                const porte2Material = new THREE.MeshPhongMaterial( { map:textureTable } );
+                porte2 = new THREE.Mesh( porte2Geometry, porte2Material );//obligatoire*
+                porte2.castShadow = true;
+				porte2.receiveShadow = true;
+				//scene.add( porte2 );
+				porte2.position.x = 300;
+				porte2.position.y = 550;
+				porte2.position.z = 1200;
+                porte2.rotation.y = Math.PI/2;
+
+
                 //////
+                raycaster = new THREE.Raycaster();
+				pointer = new THREE.Vector2();
+
+                document.addEventListener( 'pointermove', onPointerMove );
+                document.addEventListener( 'keydown', onDocumentKeyDown );
+				document.addEventListener( 'keyup', onDocumentKeyUp );
 
 				// model
 
@@ -775,7 +806,7 @@
                 controls = new FirstPersonControls( camera, renderer.domElement );
 
 				controls.movementSpeed = 1500;
-				controls.lookSpeed = 0.3;
+				controls.lookSpeed = 0.8;
 				controls.noFly = true;
 				controls.lookVertical = true;
                 controls.lookHorizontal = true;
@@ -810,8 +841,56 @@
 
             function onPointerMove( event ) {
 
-            pointer.x = ( event.clientX / window.innerWidth ) * 2 - 1;
-            pointer.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+                //pointer.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+                //pointer.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+                pointer.set( ( event.clientX / window.innerWidth ) * 2 - 1, - ( event.clientY / window.innerHeight ) * 2 + 1 );
+                raycaster.setFromCamera( pointer, camera );
+
+				const intersects = raycaster.intersectObjects( porte );
+
+				if ( intersects.length > 0 ) {
+
+                    if (INTERSECTED != intersects[ 0 ].index){
+					    
+
+                            if(!interrupteur){
+                                //scene.remove(porte);
+                                //scene.add(porte2);
+                                porte2.rotation.y =+ Math.PI/2;
+                                console.log("A");
+
+                            } else {
+                                //scene.remove(porte2);
+                                //scene.add(porte);
+                                porte2.rotation.y =- Math.PI/2;
+                                console.log("B");
+                            }
+                            interrupteur = !interrupteur;
+                            console.log("C");
+
+                        
+                    }
+                }
+                render();
+            }
+
+            function onDocumentKeyDown( event ) {
+
+                switch ( event.keyCode ) {
+
+                    case 16: isShiftDown = true; break;
+
+                }
+
+            }
+
+            function onDocumentKeyUp( event ) {
+
+                switch ( event.keyCode ) {
+
+                    case 16: isShiftDown = false; break;
+
+                }
 
             }
 
