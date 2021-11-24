@@ -6,16 +6,21 @@
 		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 	</head>
 	<body>
-
+        <div id="containere"></div>
         <div id="bg">
-        <video muted autoplay loop preload="auto" id="background-video">
-            <source src="./background/background.mp4" class="background-tunnel" type="video/mp4">
-          </video>
+            <video muted autoplay loop preload="auto" id="background-video">
+                <source src="./background/background.mp4" class="background-tunnel" type="video/mp4">
+            </video>
         </div>
-
-	<div id="overlay">
-		<button id="startButton">Play</button>
-	</div>
+        <audio id="jazzybackground" loop preload="auto" style="display: none">
+            <source src="sounds/jazzybackground.mp3" type="audio/mpeg">
+        </audio>
+        <audio id="ambientVoices" loop preload="auto" style="display: none">
+            <source src="sounds/ambientvoices.mp3" type="audio/mpeg">
+        </audio>
+	    <div id="overlay">
+		    <button id="startButton">Play</button>
+	    </div>
 
 	<style>
 
@@ -112,6 +117,10 @@
 
 			import { FirstPersonControls } from "./jsm/controls/FirstPersonControls.js";
 
+            import Stats from './jsm/libs/stats.module.js';
+
+            import * as BufferGeometryUtils from './jsm/utils/BufferGeometryUtils.js';
+
 			/*import { OrbitControls } from './jsm/controls/OrbitControls.js';*/
 
 			import { FBXLoader } from './jsm/loaders/FBXLoader.js';
@@ -127,7 +136,6 @@
 
 			const startButton = document.getElementById( 'startButton' );
             startButton.addEventListener( 'click', init);
-            
 
 
 			let mesh, pied1,pied2,pied3,pied4,barre1,barre2,barreau1,barreau2, circle, circle2;
@@ -139,8 +147,9 @@
 			let showCameraHelper = false;
 			let showLightHelper = false;
 			let activateAnimate = false;
+            let raycaster, intersects;
+            let pointer, INTERSECTED;
 
-        
 
             function render() {
 
@@ -344,12 +353,17 @@
                 renderer.render( scene, camera );//obligatoire
 
                 render();
+                stats.update();
 
             }
 
 
 
 			function init() {
+
+                const containere = document.getElementById('containere');
+                stats = new Stats();
+                containere.appendChild(stats.dom);
 
                 const container = document.createElement( 'div' );
 				document.body.appendChild( container );
@@ -368,6 +382,38 @@
 
 				const ambient = new THREE.AmbientLight( 0xffffff, 0.1 );
 				scene.add( ambient );
+
+                const textureRadio = new THREE.TextureLoader().load('../textures/texture-table.jpg');
+
+                const listener = new THREE.AudioListener();
+                camera.add( listener );
+
+                // create the PositionalAudio object (passing in the listener)
+                const sound = new THREE.PositionalAudio( listener );
+                const songElement = document.getElementById( 'jazzybackground' );
+                sound.setMediaElementSource( songElement );
+                sound.setRefDistance( 200 );
+                songElement.play();
+
+                // create an object for the sound to play from
+                const jukeBox= new THREE.BoxGeometry( 50, 50, 50 );
+                const jukemat = new THREE.MeshPhongMaterial( { map:textureRadio } );
+                const jukebox = new THREE.Mesh( jukeBox, jukemat );
+                scene.add( jukebox );
+
+                jukebox.position.x = 570;
+                jukebox.position.y = 370;
+                jukebox.position.z = 100;
+
+                // add sound to the jukeboxx
+                jukebox.add( sound );
+
+                //ambient sound
+                const ambientVoices = new THREE.Audio( listener );
+                const voices = document.getElementById( 'ambientVoices' );
+                ambientVoices.setMediaElementSource( voices );
+                ambientVoices.setVolume( 0.5 );
+                voices.play();
 
 				spotLight = new THREE.SpotLight( 0xffffff, 3 );
 				//spotLight.position.set( 200, 700, 100 );
@@ -760,12 +806,14 @@
 
                 controls.handleResize();
 
-}
+            }
 
+            function onPointerMove( event ) {
 
+            pointer.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+            pointer.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
 
-            
-
+            }
 
 
             //created by @ZeRiix 2021
