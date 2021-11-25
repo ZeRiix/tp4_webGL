@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 	<head>
 		<title>chaise 4 - ZeRiix</title>
 		<meta charset="utf-8">
@@ -91,8 +91,7 @@
             
             --hover: #1C2834;
             --color: #1C2834;
-        
-        
+
 		}
 
 
@@ -100,6 +99,18 @@
             box-shadow: 0 0 0 0 var(--hover), inset 6em 3.8em 0 0 var(--hover);
             border: 1px solid black;
             cursor: pointer;
+        }
+        #progress {
+        width: 200px;
+        height: 20px;
+        background: #000;
+        border: 2px solid #000;
+        }
+        #progress > #progressBar {
+        width: 200px;
+        height: 20px;
+        background: red;
+        border: none;
         }
 
 
@@ -109,7 +120,6 @@
 
 		<script type="module">
 
-        
 
 			import * as THREE from '../build/three.module.js';
 
@@ -147,10 +157,13 @@
 			let showCameraHelper = false;
 			let showLightHelper = false;
 			let activateAnimate = false;
+            let showAudioSetting = false;
             let raycaster, intersects;
             let pointer, INTERSECTED;
             let isShiftDown = false;
             let interrupteur = false;
+            let analyser;
+            let sound, songElement, ambientVoices;
 
 
             function render() {
@@ -161,6 +174,8 @@
                 lightHelper.update();
 
                 shadowCameraHelper.update();
+
+                //porte.rotation.y = analyser.getAverrageFrequency();
 
                 renderer.render( scene, camera );
 
@@ -186,7 +201,9 @@
                 AxeHelper: showAxeHelper,
                 LightHelper: showLightHelper,
                 ShadowHelper: showCameraHelper,
-                Animate: activateAnimate
+                Animate: activateAnimate,
+                audioSetting: showAudioSetting,
+                soundVolume: ambientVoices
             };
 
 
@@ -335,6 +352,29 @@
             } );
 
                 Helper.close();
+
+            const audioSettings = gui.addFolder('audioSettings');
+
+            audioSettings.add( params, 'audioSetting' ).name( 'Audio Setting' ).onChange(() => {
+                if(!showAudioSetting){
+                    scene.add(sound);
+                    songElement.play();
+                } else {
+                    scene.remove(sound);
+                    songElement.pause();
+                }
+                showAudioSetting = !showAudioSetting;
+
+            } );
+
+            /*audioSettings.add( params, 'soundVolume', 0.1, 1.0).onChange( function ( val ) {
+
+                ambientVoices.setVolume(val);
+                render();
+
+            } );*/
+
+
             }
 
             function animate() { 
@@ -391,11 +431,17 @@
                 camera.add( listener );
 
                 // create the PositionalAudio object (passing in the listener)
-                const sound = new THREE.PositionalAudio( listener );
-                const songElement = document.getElementById( 'jazzybackground' );
+                sound = new THREE.PositionalAudio( listener );
+                songElement = document.getElementById( 'jazzybackground' );
                 sound.setMediaElementSource( songElement );
                 sound.setRefDistance( 200 );
                 songElement.play();
+
+                //analyser of sound
+                analyser = new THREE.AudioAnalyser(sound, 32);
+
+                //control sound GUI
+                
 
                 // create an object for the sound to play from
                 const jukeBox= new THREE.BoxGeometry( 50, 50, 50 );
@@ -411,7 +457,7 @@
                 jukebox.add( sound );
 
                 //ambient sound
-                const ambientVoices = new THREE.Audio( listener );
+                ambientVoices = new THREE.Audio( listener );
                 const voices = document.getElementById( 'ambientVoices' );
                 ambientVoices.setMediaElementSource( voices );
                 ambientVoices.setVolume( 0.5 );
@@ -691,16 +737,35 @@
 
 
                 //////
+                /*
                 raycaster = new THREE.Raycaster();
 				pointer = new THREE.Vector2();
 
                 document.addEventListener( 'pointermove', onPointerMove );
                 document.addEventListener( 'keydown', onDocumentKeyDown );
 				document.addEventListener( 'keyup', onDocumentKeyUp );
+                */
 
 				// model
 
-				const loader = new FBXLoader();
+                var progress = document.createElement('div');
+                var progressBar = document.createElement('div');
+                progress.id = "progress";
+                progressBar.id = "progressBar";
+                progress.appendChild(progressBar);
+                document.body.appendChild(progress);
+
+                const manager = new THREE.LoadingManager();
+                manager.onProgress = function ( item, loaded, total ) {
+                    progressBar.style.width = (loaded / total * 100) + '%';
+                };
+                manager.onLoad = function ( ) {
+
+                    console.log( 'Loading complete!');
+
+                };
+
+				const loader = new FBXLoader(manager);
 				loader.load( 'models/fbx/Drinking.fbx', function ( object ) {
 
 					mixer = new THREE.AnimationMixer( object );
@@ -734,7 +799,7 @@
 
                 // model 2
 
-				const loader2 = new FBXLoader();
+				const loader2 = new FBXLoader(manager);
 				loader2.load( 'models/fbx/Talking.fbx', function ( object2 ) {
 
 					mixer2 = new THREE.AnimationMixer( object2 );
@@ -839,7 +904,7 @@
 
             }
 
-            function onPointerMove( event ) {
+            /*function onPointerMove( event ) {
 
                 //pointer.x = ( event.clientX / window.innerWidth ) * 2 - 1;
                 //pointer.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
@@ -892,7 +957,7 @@
 
                 }
 
-            }
+            }*/
 
 
             //created by @ZeRiix 2021
