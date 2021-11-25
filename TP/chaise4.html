@@ -157,7 +157,7 @@
 			let showCameraHelper = false;
 			let showLightHelper = false;
 			let activateAnimate = false;
-            let showAudioSetting = false;
+            let showAudioSetting = true;
             let raycaster, intersects;
             let pointer, INTERSECTED;
             let isShiftDown = false;
@@ -426,6 +426,7 @@
 				scene.add( ambient );
 
                 const textureRadio = new THREE.TextureLoader().load('../textures/texture-table.jpg');
+                const textureGrille = new THREE.TextureLoader().load('../textures/texture-enceinte.jpg');
 
                 const listener = new THREE.AudioListener();
                 camera.add( listener );
@@ -443,10 +444,24 @@
                 //control sound GUI
                 
 
+                // grille enceinte
+
+                const grilleGeo = new THREE.BoxGeometry(1, 150, 50);
+                const grileMat = new THREE.MeshStandardMaterial( { map:textureGrille});
+                const grille = new THREE.Mesh(grilleGeo, grileMat);
+                grille.receiveShadow = true;
+                scene.add( grille );
+
+                grille.position.x = 545;
+                grille.position.y = 370;
+                grille.position.z = 100;
+
                 // create an object for the sound to play from
-                const jukeBox= new THREE.BoxGeometry( 50, 50, 50 );
+                const jukeBox = new THREE.BoxGeometry( 50, 150, 50 );
                 const jukemat = new THREE.MeshPhongMaterial( { map:textureRadio } );
                 const jukebox = new THREE.Mesh( jukeBox, jukemat );
+                jukebox.receiveShadow = true;
+                jukebox.castShadow = true;
                 scene.add( jukebox );
 
                 jukebox.position.x = 570;
@@ -870,7 +885,7 @@
 
                 controls = new FirstPersonControls( camera, renderer.domElement );
 
-				controls.movementSpeed = 1500;
+				controls.movementSpeed = 2500;
 				controls.lookSpeed = 0.8;
 				controls.noFly = true;
 				controls.lookVertical = true;
