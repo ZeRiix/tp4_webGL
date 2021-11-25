@@ -464,13 +464,11 @@
                 // create an object for the sound to play from
                 const jukeBox = new THREE.BoxGeometry( 50, 150, 50 );
                 const jukemat = new THREE.MeshPhongMaterial( { map:textureRadio } );
-<<<<<<< HEAD
+
                 const jukebox = new THREE.Mesh( jukeBox, jukemat );
                 jukebox.receiveShadow = true;
                 jukebox.castShadow = true;
-=======
-                jukebox = new THREE.Mesh( jukeBox, jukemat );
->>>>>>> 453dfa1cc74b6e1f88e2e7b0cd5b1bf6a2ca70da
+
                 scene.add( jukebox );
 
                 jukebox.position.x = 570;
