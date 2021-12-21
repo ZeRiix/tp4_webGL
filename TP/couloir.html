@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="fr">
+	<head>
+		<title>Couloir Projet WebGL</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<link rel="stylesheet" href="css/style.css">
+	</head>
+	<body>
+
+		<!--div id="text-box">
+			<div class="heading">Vers l'infini et au-delà !</div>
+			<div id="overlay">
+				<div id="button">Initialiser le monde -> </div>
+			</div>
+		  </div-->
+
+	<script type="module">
+
+import * as THREE from '../build/three.module.js';
+import { OrbitControls } from './jsm/controls/OrbitControls.js';
+
+			let camera, scene, renderer, controls;
+			let groundCorridor, wall1Corridor, wall2Corridor, wallBackCorridor;
+			let spotLight, spotLightLeft, spotLightRight, lightHelper, shadowCameraHelper;
+
+			//const startButton = document.getElementById( 'button' );
+            //startButton.onclick = () => init();
+
+			init();
+			animate();
+
+
+			function init() {
+
+				
+				//const textBox = document.getElementById('text-box');
+				//textBox.parentNode.removeChild(textBox);
+
+
+				camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 10000 );
+				camera.position.set( 700, 800, 10 );
+				camera.position.z = 15000;
+
+				scene = new THREE.Scene();
+
+				renderer = new THREE.WebGLRenderer( { antialias: true } );
+				renderer.setPixelRatio( window.devicePixelRatio );
+				renderer.setSize( window.innerWidth, window.innerHeight );
+				renderer.shadowMap.enabled = true;
+				document.body.appendChild( renderer.domElement );
+
+				renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+				renderer.outputEncoding = THREE.sRGBEncoding;
+
+				spotLightRight = new THREE.SpotLight( 0xffffff, 10 );
+				//spotLight.position.set( 200, 700, 100 );
+                spotLightRight.position.x = 500;
+                spotLightRight.position.y = 2500;
+                spotLightRight.position.z = -10000;
+				spotLightRight.angle = Math.PI / 4;
+				spotLightRight.penumbra = 0.5;
+				spotLightRight.intensity = 5;
+				spotLightRight.decay = 2;
+				spotLightRight.distance = 13000;
+
+				spotLightRight.castShadow = true;
+				spotLightRight.shadow.mapSize.width = 1024;
+				spotLightRight.shadow.mapSize.height = 1024;
+				spotLightRight.shadow.camera.near = 100;
+				spotLightRight.shadow.camera.far = 100;
+				spotLightRight.shadow.focus = 1;
+				scene.add( spotLightRight );
+
+				spotLightLeft = new THREE.SpotLight( 0xffffff, 10 );
+				//spotLight.position.set( 200, 700, 100 );
+                spotLightLeft.position.x = 500;
+                spotLightLeft.position.y = 2500;
+                spotLightLeft.position.z = 10000;
+				spotLightLeft.angle = Math.PI / 4;
+				spotLightLeft.penumbra = 0.5;
+				spotLightLeft.intensity = 5;
+				spotLightLeft.decay = 2;
+				spotLightLeft.distance = 13000;
+
+				spotLightLeft.castShadow = true;
+				spotLightLeft.shadow.mapSize.width = 1024;
+				spotLightLeft.shadow.mapSize.height = 1024;
+				spotLightLeft.shadow.camera.near = 100;
+				spotLightLeft.shadow.camera.far = 100;
+				spotLightLeft.shadow.focus = 1;
+				scene.add( spotLightLeft );
+
+				spotLight = new THREE.SpotLight( 0xffffff, 10 );
+				//spotLight.position.set( 200, 700, 100 );
+                spotLight.position.x = 5000;
+                spotLight.position.y = 10000;
+                spotLight.position.z = 2000;
+				spotLight.angle = Math.PI / 4;
+				spotLight.penumbra = 0.5;
+				spotLight.intensity = 5;
+				spotLight.decay = 2;
+				spotLight.distance = 18000;
+
+				spotLight.castShadow = true;
+				spotLight.shadow.mapSize.width = 1024;
+				spotLight.shadow.mapSize.height = 1024;
+				spotLight.shadow.camera.near = 100;
+				spotLight.shadow.camera.far = 100;
+				spotLight.shadow.focus = 1;
+				scene.add( spotLight );
+
+				lightHelper = new THREE.SpotLightHelper( spotLight, spotLightRight, spotLightLeft );
+				scene.add(lightHelper);
+
+				shadowCameraHelper = new THREE.CameraHelper( spotLight.shadow.camera );
+				scene.add(shadowCameraHelper);
+
+				// Textures
+
+				const groundCorridortexture = new THREE.TextureLoader().load( './textures/texture-sol-navette.jpg' );
+				const wallCorridortexture = new THREE.TextureLoader().load( './textures/texture-mur-navette.jpg' );
+
+				/* Couloir */
+
+				const groundCorridormaterial = new THREE.MeshStandardMaterial( { map:groundCorridortexture } );
+				const groundCorridorgeometry = new THREE.BoxGeometry( 3500, 1200, 50 );
+				
+				groundCorridor = new THREE.Mesh( groundCorridorgeometry, groundCorridormaterial );
+				groundCorridor.material.side = THREE.DoubleSide;
+				groundCorridor.rotation.x = Math.PI * 0.5;
+				groundCorridor.receiveShadow = true;
+				scene.add( groundCorridor );
+
+				const wall1Corridormaterial = new THREE.MeshStandardMaterial( { map:wallCorridortexture } );
+				const wall1Corridorgeometry = new THREE.BoxGeometry(3500, 1500, 50);
+
+				wall1Corridor = new THREE.Mesh( wall1Corridorgeometry, wall1Corridormaterial );
+				wall1Corridor.position.y = 725;
+				wall1Corridor.position.z = 625;
+				wall1Corridor.castShadow = true;
+				wall1Corridor.receiveShadow = true;
+				scene.add(wall1Corridor);
+
+				const wall2Corridormaterial = new THREE.MeshStandardMaterial( { map:wallCorridortexture } );
+				const wall2Corridorgeometry = new THREE.BoxGeometry(3500, 1500, 50);
+
+				wall2Corridor = new THREE.Mesh( wall2Corridorgeometry, wall2Corridormaterial );
+				wall2Corridor.position.y = 725;
+				wall2Corridor.position.z = -625;
+				wall2Corridor.castShadow = true;
+				wall2Corridor.receiveShadow = true;
+				scene.add(wall2Corridor);
+
+		
+				/* Fin Couloir */
+
+
+
+				// Orbit controls
+
+				controls = new OrbitControls( camera, renderer.domElement );
+				controls.addEventListener( 'change', render );
+				controls.minDistance = 20;
+				controls.maxDistance = 5000;
+				controls.enablePan = false;
+
+
+				window.addEventListener( 'resize', onWindowResize );
+
+			}
+
+			function animate() {
+
+			requestAnimationFrame( animate );
+
+			controls.update();
+
+			renderer.render( scene, camera );
+
+			}
+
+
+			function onWindowResize() {
+
+			camera.aspect = window.innerWidth / window.innerHeight;
+			camera.updateProjectionMatrix();
+
+			renderer.setSize( window.innerWidth, window.innerHeight );
+
+			}
+
+
+		
+			function render() {
+
+
+			lightHelper.update();
+
+			shadowCameraHelper.update();
+
+			renderer.render( scene, camera );
+
+
+			}
+
+
+
+	</script>
+
+    </body>
+</html>
