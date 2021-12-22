@@ -15,20 +15,60 @@
 			</div>
 		  </div-->
 
+		  <div id="button">
+			  Let's open!
+		  </div>
+		  <div id="buttonClose">
+			  Let's close!
+		  </div>
+
 	<script type="module">
 
 import * as THREE from '../build/three.module.js';
 import { OrbitControls } from './jsm/controls/OrbitControls.js';
+import { GUI } from './jsm/libs/dat.gui.module.js';
 
 			let camera, scene, renderer, controls;
-			let groundCorridor, wall1Corridor, wall2Corridor, wallBackCorridor;
-			let spotLight, spotLightLeft, spotLightRight, lightHelper, shadowCameraHelper;
+			let groundCorridor, groundMars, wall1Corridor, wall2Corridor, wallBackCorridor, door1, door2, window1, window2;
+			let spotLight, spotLightLeft, spotLightRight, spotLightBack, lightHelper, shadowCameraHelper, gui;
 
 			//const startButton = document.getElementById( 'button' );
             //startButton.onclick = () => init();
 
 			init();
 			animate();
+
+			function buildGui() {
+
+			gui = new GUI();
+
+			const params = {
+			Door1PositionZ: door1.position.z,
+			Door2PositionZ: door2.position.z 
+			};
+
+			gui.open();
+
+			gui.add( params, 'Door1PositionZ', 320, 920 ).name( 'Door1PositionZ' ).onChange( function ( val ) {
+
+			door1.position.z = val;
+			console.log(val);
+			render();
+
+			} );
+
+
+			gui.add( params, 'Door2PositionZ', 320, 920 ).name( 'Door2PositionZ' ).onChange( function ( val ) {
+
+			door2.position.z = -val;
+			render();
+
+			} );
+
+			}
+
+
+
 
 
 			function init() {
@@ -37,7 +77,7 @@ import { OrbitControls } from './jsm/controls/OrbitControls.js';
 				//const textBox = document.getElementById('text-box');
 				//textBox.parentNode.removeChild(textBox);
 
-
+				
 				camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 10000 );
 				camera.position.set( 700, 800, 10 );
 				camera.position.z = 15000;
@@ -93,9 +133,9 @@ import { OrbitControls } from './jsm/controls/OrbitControls.js';
 
 				spotLight = new THREE.SpotLight( 0xffffff, 10 );
 				//spotLight.position.set( 200, 700, 100 );
-                spotLight.position.x = 5000;
-                spotLight.position.y = 10000;
-                spotLight.position.z = 2000;
+                spotLight.position.x = -6000;
+                spotLight.position.y = 5000;
+                spotLight.position.z = 0;
 				spotLight.angle = Math.PI / 4;
 				spotLight.penumbra = 0.5;
 				spotLight.intensity = 5;
@@ -110,52 +150,186 @@ import { OrbitControls } from './jsm/controls/OrbitControls.js';
 				spotLight.shadow.focus = 1;
 				scene.add( spotLight );
 
+				spotLightBack = new THREE.SpotLight( 0xffffff, 10 );
+				//spotLight.position.set( 200, 700, 100 );
+                spotLightBack.position.x = 5000;
+                spotLightBack.position.y = -10000;
+                spotLightBack.position.z = 2000;
+				spotLightBack.angle = Math.PI / 4;
+				spotLightBack.penumbra = 0.5;
+				spotLightBack.intensity = 5;
+				spotLightBack.decay = 2;
+				spotLightBack.distance = 18000;
+
+				spotLightBack.castShadow = true;
+				spotLightBack.shadow.mapSize.width = 1024;
+				spotLightBack.shadow.mapSize.height = 1024;
+				spotLightBack.shadow.camera.near = 100;
+				spotLightBack.shadow.camera.far = 100;
+				spotLightBack.shadow.focus = 1;
+				scene.add( spotLightBack );
+
 				lightHelper = new THREE.SpotLightHelper( spotLight, spotLightRight, spotLightLeft );
 				scene.add(lightHelper);
 
-				shadowCameraHelper = new THREE.CameraHelper( spotLight.shadow.camera );
+				shadowCameraHelper = new THREE.CameraHelper( spotLight.shadow.camera, spotLightLeft.shadow.camera, spotLightRight.shadow.camera );
 				scene.add(shadowCameraHelper);
+				
 
 				// Textures
 
 				const groundCorridortexture = new THREE.TextureLoader().load( './textures/texture-sol-navette.jpg' );
 				const wallCorridortexture = new THREE.TextureLoader().load( './textures/texture-mur-navette.jpg' );
+				const groundMarstexture = new THREE.TextureLoader().load( './textures/sol-texture-mars.jpg' );
+				const doorTexture = new THREE.TextureLoader().load( './textures/porte-spatiale.jpg' );
 
 				/* Couloir */
 
-				const groundCorridormaterial = new THREE.MeshStandardMaterial( { map:groundCorridortexture } );
+				const groundCorridormaterial = new THREE.MeshPhongMaterial( { map:groundCorridortexture } );
 				const groundCorridorgeometry = new THREE.BoxGeometry( 3500, 1200, 50 );
 				
 				groundCorridor = new THREE.Mesh( groundCorridorgeometry, groundCorridormaterial );
-				groundCorridor.material.side = THREE.DoubleSide;
 				groundCorridor.rotation.x = Math.PI * 0.5;
 				groundCorridor.receiveShadow = true;
+				groundCorridor.position.y = 50;
 				scene.add( groundCorridor );
 
-				const wall1Corridormaterial = new THREE.MeshStandardMaterial( { map:wallCorridortexture } );
+				const groundMarsmaterial = new THREE.MeshPhongMaterial( { map:groundMarstexture } );
+				const groundMarsgeometry = new THREE.BoxGeometry( 10000, 10000, 50 );
+				
+				groundMars = new THREE.Mesh( groundMarsgeometry, groundMarsmaterial );
+				groundMars.rotation.x = Math.PI * 0.5;
+				groundMars.receiveShadow = true;
+				scene.add( groundMars );
+
+
+				const wall1Corridormaterial = new THREE.MeshPhongMaterial( { map:wallCorridortexture } );
 				const wall1Corridorgeometry = new THREE.BoxGeometry(3500, 1500, 50);
 
 				wall1Corridor = new THREE.Mesh( wall1Corridorgeometry, wall1Corridormaterial );
-				wall1Corridor.position.y = 725;
+				wall1Corridor.position.y = 775;
 				wall1Corridor.position.z = 625;
 				wall1Corridor.castShadow = true;
 				wall1Corridor.receiveShadow = true;
 				scene.add(wall1Corridor);
 
-				const wall2Corridormaterial = new THREE.MeshStandardMaterial( { map:wallCorridortexture } );
+				const wall2Corridormaterial = new THREE.MeshPhongMaterial( { map:wallCorridortexture } );
 				const wall2Corridorgeometry = new THREE.BoxGeometry(3500, 1500, 50);
 
 				wall2Corridor = new THREE.Mesh( wall2Corridorgeometry, wall2Corridormaterial );
-				wall2Corridor.position.y = 725;
+				wall2Corridor.position.y = 775;
 				wall2Corridor.position.z = -625;
 				wall2Corridor.castShadow = true;
 				wall2Corridor.receiveShadow = true;
 				scene.add(wall2Corridor);
 
-		
+				const wallBackCorridormaterial = new THREE.MeshPhongMaterial( { map:wallCorridortexture } );
+				const wallBackCorridorgeometry = new THREE.BoxGeometry(1300, 1500, 50);
+
+				wallBackCorridor = new THREE.Mesh( wallBackCorridorgeometry, wallBackCorridormaterial );
+				wallBackCorridor.position.y = 775;
+				wallBackCorridor.position.z = 0; 
+				wallBackCorridor.position.x = 1770;
+				wallBackCorridor.rotation.y = Math.PI * 0.5;
+				wallBackCorridor.castShadow = true;
+				wallBackCorridor.receiveShadow = true;
+				scene.add(wallBackCorridor);
+
+				const door1material = new THREE.MeshPhongMaterial( { map:doorTexture } );
+				const door1geometry = new THREE.BoxGeometry(650, 1500,20); 
+
+				door1 = new THREE.Mesh( door1geometry, door1material );
+				door1.position.y = 775;
+				door1.position.z = 320; 
+				door1.position.x = -1760;
+				door1.rotation.y = Math.PI * 0.5;
+				door1.castShadow = true;
+				door1.receiveShadow = true;
+				scene.add(door1);
+
+				const door2material = new THREE.MeshPhongMaterial( { map:doorTexture } );
+				const door2geometry = new THREE.BoxGeometry(650, 1500,20); 
+
+				door2 = new THREE.Mesh( door2geometry, door2material );
+				door2.position.y = 775;
+				door2.position.z = -320; 
+				door2.position.x = -1760;
+				door2.rotation.y = Math.PI * 0.5;
+				door2.castShadow = true;
+				door2.receiveShadow = true;
+				scene.add(door2);
+
+
+			
 				/* Fin Couloir */
 
+			
+				
+				document.getElementById('button').onclick = function openDoor() {
 
+					let door1positionZ = door1.position.z;
+					let door2positionZ = door2.position.z;
+					console.log("Door1: " + door1positionZ +" "+" "+ "Door2: " + door2positionZ);
+
+					if (door1positionZ == 920 && door2positionZ == -920){
+						alert("Les portes sont déjà ouverte!");
+					} else {
+						while(door1positionZ < 920 && door2positionZ > -920) {
+
+						// Vitesse de l'animation
+						door1positionZ += 10;
+						door2positionZ += -10;
+						console.log(door1positionZ);
+						console.log(door2positionZ);
+
+						// Fin d'animation
+						if(door1positionZ == 920 && door2positionZ == -920) {
+							console.log("Position final door1: " + door1positionZ,
+							"Position final door2: " + door2positionZ);
+							document.getElementById('button').style.borderColor = 'green';
+							alert('Porte ouverte!');
+						}
+
+						door1.position.z = door1positionZ;
+						door2.position.z = door2positionZ;
+						render();
+					}
+				}
+
+				}
+
+				document.getElementById('buttonClose').onclick = function closeDoor() {
+					let door1positionZ = door1.position.z;
+					let door2positionZ = door2.position.z;
+					console.log("Door1: " + door1positionZ +" "+" "+ "Door2: " + door2positionZ);
+
+					if (door1positionZ == 320 && door2positionZ == -320){
+						alert("Les portes sont déjà fermées!");
+					} else {
+						while(door1positionZ > 320 && door2positionZ < -320) {
+							// Vitesse de l'animation
+							door1positionZ += -10;
+							door2positionZ += 10;
+							console.log(door1positionZ);
+							console.log(door2positionZ);
+
+							// Fin d'animation
+							if(door1positionZ == 320 && door2positionZ == -320) {
+								console.log("Position final door1: " + door1positionZ,
+								"Position final door2: " + door2positionZ);
+								document.getElementById('buttonClose').style.borderColor = 'red';
+								alert('Porte fermée!');
+						}
+
+						door1.position.z = door1positionZ;
+						door2.position.z = door2positionZ;
+						render();
+						}
+					}
+
+					
+
+				}
 
 				// Orbit controls
 
@@ -168,7 +342,11 @@ import { OrbitControls } from './jsm/controls/OrbitControls.js';
 
 				window.addEventListener( 'resize', onWindowResize );
 
+				buildGui();
+
 			}
+
+			
 
 			function animate() {
 
@@ -200,7 +378,6 @@ import { OrbitControls } from './jsm/controls/OrbitControls.js';
 			shadowCameraHelper.update();
 
 			renderer.render( scene, camera );
-
 
 			}
 

@@ -2,12 +2,10 @@ body {
   width: 100vw;
   height: 100vh;
   margin: 0;
-  background: black;
+  padding: 0;
   overflow: hidden;
-  display: flex;
-  justify-content: center;
-  align-items: center;
 }
+/*
 canvas {
   position: absolute;
   top:0;
@@ -29,21 +27,52 @@ canvas {
   padding: 20px;
   flex-direction: row;
 }
+
+*/
+
 #button {
   display: inline-block;
+  position: absolute;
   font-size: 16px;
   font-weight: bold;
   padding: 15px;
   margin-left:20px;
   margin-right:20px;
   word-spacing: normal;
+  text-transform: uppercase;
   letter-spacing: 5px;
-  border: 1px solid white;
-  background: black;
+  border: 2px solid black;
+  background: whitesmoke;
   cursor: pointer;
+  font-family: 'Raleway', sans-serif;
+  letter-spacing: 5px;
+}
+
+#buttonClose {
+  display: inline-block;
+  position: absolute;
+  left: 12%;
+  font-size: 16px;
+  font-weight: bold;
+  padding: 15px;
+  margin-left:20px;
+  margin-right:20px;
+  word-spacing: normal;
+  text-transform: uppercase;
+  letter-spacing: 5px;
+  border: 2px solid black;
+  background: whitesmoke;
+  cursor: pointer;
+  font-family: 'Raleway', sans-serif;
+  letter-spacing: 5px;
 }
 
 #button:hover {
-  background-color: whitesmoke;
-  color: black;
+  background-color: #3A9D23;
+  color: whitesmoke;
+}
+
+#buttonClose:hover {
+  background-color: indianred;
+  color: whitesmoke;
 }
