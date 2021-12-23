@@ -52,6 +52,9 @@ canvas {
   background: black;
   cursor: pointer;
   z-index: 1;
+  box-shadow: 0 2px 2px 0px white;
+  border-radius: 25px;
+  transition: 0.2s all;
 }
 
 #button {
@@ -71,6 +74,7 @@ canvas {
   font-family: 'Russo One', sans-serif;
   letter-spacing: 5px;
   z-index: 1;
+  border-radius: 25px;
   top: 0;
   left: 5%;
 }
@@ -92,6 +96,7 @@ canvas {
   cursor: pointer;
   font-family: 'Russo One', sans-serif;
   letter-spacing: 5px;
+  border-radius: 25px;
   z-index: 1;
   top: 0;
   left: 18%;
@@ -110,5 +115,14 @@ canvas {
 #buttonInit:hover {
   color: black;
   background-color: whitesmoke;
+  box-shadow: 0 2px 8px 0px white;
+  -webkit-transform: translateY(-12%);
+  transform: translateY(-12%);
 }
 
+#text-box:hover .heading{
+  filter: blur(8px);
+  opacity: 0.5;
+  transform: scale(0.98);
+  box-shadow: none;
+}
