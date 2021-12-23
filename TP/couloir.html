@@ -18,10 +18,10 @@
 
 		  <div id="buttonDoor">
 		  <div id="button">
-			  Let's open!
+			  Let's open
 		  </div>
 		  <div id="buttonClose">
-			  Let's close!
+			  Let's close
 		  </div>
 		</div>
 
@@ -34,6 +34,7 @@
 	<script>
 
 			let scene, camera, renderer, stars, starGeo;
+			
 
 			function startPage() {
 
@@ -107,9 +108,10 @@
 			import { OrbitControls } from './jsm/controls/OrbitControls.js';
 			import { GUI } from './jsm/libs/dat.gui.module.js';
 			import Stats from './jsm/libs/stats.module.js';
+			import * as MATERIAL from './material.module.js';
 			
 			let camera, scene, renderer, controls, stats;
-			let groundCorridor, groundMars, wall1Corridor, wall2Corridor, wallBackCorridor, door1, door2, window1, window2;
+			let groundCorridor, ground, wall1Corridor, wall2Corridor, wallBackCorridor, door1, door2, window1, window2;
 			let spotLight, spotLightLeft, spotLightRight, spotLightBack, lightHelper, shadowCameraHelper, gui;
 			
 
@@ -119,11 +121,16 @@
 			gui = new GUI();
 
 			const params = {
+			'Sol': Object.keys(MATERIAL.groundFileList)[0],
 			Door1PositionZ: door1.position.z,
-			Door2PositionZ: door2.position.z 
+			Door2PositionZ: door2.position.z
 			};
 
 			gui.open();
+
+			gui.add( params, 'Sol', Object.keys(MATERIAL.groundFileList)).name('Texture sol:').onChange(val => {
+				ground.material = MATERIAL.groundFileList[val];
+			});
 
 			gui.add( params, 'Door1PositionZ', 320, 920 ).name( 'Door1PositionZ' ).onChange( function ( val ) {
 
@@ -147,6 +154,12 @@
 
 			document.getElementById('buttonInit').onclick = function init() {
 
+
+				let containere, progressBarDiv;
+
+				containere = document.createElement( 'div' );
+				document.body.appendChild( containere );
+
 				const container = document.getElementById('container');
                 stats = new Stats();
                 container.appendChild(stats.dom);
@@ -157,8 +170,10 @@
 
 				
 				camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 10000 );
-				camera.position.set( 700, 800, 10 );
-				camera.position.z = 15000;
+				camera.position.set( 700, 5000, 10 );
+				camera.position.z = 3500;
+				camera.position.x = -3500;
+				camera.position.y = 3000;
 
 				scene = new THREE.Scene();
 
@@ -170,6 +185,18 @@
 
 				renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 				renderer.outputEncoding = THREE.sRGBEncoding;
+
+				progressBarDiv = document.createElement( 'div' );
+				progressBarDiv.innerText = 'Loading...';
+				progressBarDiv.style.fontSize = '3em';
+				progressBarDiv.style.color = '#888';
+				progressBarDiv.style.display = 'block';
+				progressBarDiv.style.position = 'absolute';
+				progressBarDiv.style.fontFamily = 'Russo One';
+				progressBarDiv.style.top = '50%';
+				progressBarDiv.style.width = '100%';
+				progressBarDiv.style.textAlign = 'center';
+
 
 				animate();
 
@@ -256,12 +283,24 @@
 				scene.add(shadowCameraHelper);
 				
 
-				// Textures
+				// Textures navette
 
 				const groundCorridortexture = new THREE.TextureLoader().load( './textures/texture-sol-navette.jpg' );
 				const wallCorridortexture = new THREE.TextureLoader().load( './textures/texture-mur-navette.jpg' );
-				const groundMarstexture = new THREE.TextureLoader().load( './textures/sol-texture-mars.jpg' );
 				const doorTexture = new THREE.TextureLoader().load( './textures/porte-spatiale.jpg' );
+
+				// Ground texture
+
+				const groundMarstexture = new THREE.TextureLoader().load( './textures/sol-texture-mars.jpg' );
+				const groundMoontexture = new THREE.TextureLoader().load('./textures/texture-moon.jpg');
+				const groundNeptunetexture = new THREE.TextureLoader().load('./textures/texture-neptune.jpg');
+				const groundSuntexture = new THREE.TextureLoader().load('./textures/texture-sun.png');
+
+				// Ground materiaux
+
+				const groundMoonmaterial = new THREE.MeshPhongMaterial( { map:groundMoontexture } );
+				const groundNeptunematerial = new THREE.MeshPhongMaterial( { map:groundNeptunetexture } );
+				const groundSunmaterial = new THREE.MeshPhongMaterial( { map:groundSuntexture } );
 
 				/* Couloir */
 
@@ -274,13 +313,12 @@
 				groundCorridor.position.y = 50;
 				scene.add( groundCorridor );
 
-				const groundMarsmaterial = new THREE.MeshPhongMaterial( { map:groundMarstexture } );
-				const groundMarsgeometry = new THREE.BoxGeometry( 10000, 10000, 50 );
 				
-				groundMars = new THREE.Mesh( groundMarsgeometry, groundMarsmaterial );
-				groundMars.rotation.x = Math.PI * 0.5;
-				groundMars.receiveShadow = true;
-				scene.add( groundMars );
+				const groundGeometry = new THREE.BoxGeometry( 10000, 10000, 50 );
+				ground = new THREE.Mesh( groundGeometry, MATERIAL.groundFileList.Mars );
+				ground.rotation.x = Math.PI * 0.5;
+				ground.receiveShadow = true;
+				scene.add( ground );
 
 
 				const wall1Corridormaterial = new THREE.MeshPhongMaterial( { map:wallCorridortexture } );
@@ -343,9 +381,23 @@
 			
 				/* Fin Couloir */
 
+				// create an AudioListener and add it to the camera
+				const listener = new THREE.AudioListener();
+				camera.add( listener );
+
+				// create a global audio source
+				const sound = new THREE.Audio( listener );
+
+				// load a sound and set it as the Audio object's buffer
+				const audioLoader = new THREE.AudioLoader();
+				
+
 			
 				
 				document.getElementById('button').onclick = function openDoor() {
+					
+					showProgressBar();
+					updateProgressBar( 0 );
 
 					let door1positionZ = door1.position.z;
 					let door2positionZ = door2.position.z;
@@ -353,12 +405,22 @@
 
 					if (door1positionZ == 920 && door2positionZ == -920){
 						alert("Les portes sont déjà ouverte!");
+						hideProgressBar();
 					} else {
 						while(door1positionZ < 920 && door2positionZ > -920) {
+						
+						if (door1positionZ == 320 && door2positionZ == -320) {
+							audioLoader.load( 'sounds/ouverture-porte.mp3', function( buffer ) {
+							sound.setBuffer( buffer );
+							sound.setLoop( false );
+							sound.setVolume( 5 );
+							sound.play();
+						});
+						}
 
 						// Vitesse de l'animation
-						door1positionZ += 3;
-						door2positionZ += -3;
+						door1positionZ += 100;
+						door2positionZ += -100;
 						console.log(door1positionZ);
 						console.log(door2positionZ);
 
@@ -366,30 +428,46 @@
 						if(door1positionZ == 920 && door2positionZ == -920) {
 							console.log("Position final door1: " + door1positionZ,
 							"Position final door2: " + door2positionZ);
-							document.getElementById('button').style.borderColor = 'green';
+							if (document.getElementById('buttonClose').style.color = 'red') {
+								document.getElementById('button').style.color = 'black';
+							} else {
+							document.getElementById('button').style.color = 'green';
+							}
 							alert('Porte ouverte!');
+							
 						}
-
+						
+						
 						door1.position.z = door1positionZ;
 						door2.position.z = door2positionZ;
 						render();
+						
 					}
+					hideProgressBar();
+					
 				}
 
 				}
 
 				document.getElementById('buttonClose').onclick = function closeDoor() {
+
+					showProgressBar();
+					updateProgressBar( 0 );
+
 					let door1positionZ = door1.position.z;
 					let door2positionZ = door2.position.z;
 					console.log("Door1: " + door1positionZ +" "+" "+ "Door2: " + door2positionZ);
+					
 
 					if (door1positionZ == 320 && door2positionZ == -320){
 						alert("Les portes sont déjà fermées!");
+						hideProgressBar();
 					} else {
 						while(door1positionZ > 320 && door2positionZ < -320) {
+							
 							// Vitesse de l'animation
-							door1positionZ += -3;
-							door2positionZ += 3;
+							door1positionZ += -100;
+							door2positionZ += 100;
 							console.log(door1positionZ);
 							console.log(door2positionZ);
 
@@ -397,15 +475,26 @@
 							if(door1positionZ == 320 && door2positionZ == -320) {
 								console.log("Position final door1: " + door1positionZ,
 								"Position final door2: " + door2positionZ);
-								document.getElementById('buttonClose').style.borderColor = 'red';
+								if (document.getElementById('button').style.color = 'green') {
+									document.getElementById('buttonClose').style.color = 'black';
+								} else {
+								document.getElementById('buttonClose').style.color = 'red';
+								}
 								alert('Porte fermée!');
-						}
+								
 
+						}
+						
 						door1.position.z = door1positionZ;
 						door2.position.z = door2positionZ;
 						render();
+						
 						}
+						hideProgressBar();
 					}
+					
+
+					
 
 					
 
@@ -423,6 +512,36 @@
 				window.addEventListener( 'resize', onWindowResize );
 
 				buildGui();
+
+				function onProgress( xhr ) {
+
+				if ( xhr.lengthComputable ) {
+
+					updateProgressBar( xhr.loaded / xhr.total );
+
+					console.log( Math.round( xhr.loaded / xhr.total * 100, 2 ) + '% downloaded' );
+
+				}
+
+				}
+
+				function showProgressBar() {
+
+				document.body.appendChild( progressBarDiv );
+
+				}
+
+				function hideProgressBar() {
+
+				document.body.removeChild( progressBarDiv );
+
+				}
+
+				function updateProgressBar( fraction ) {
+
+				progressBarDiv.innerText = 'Loading... ' + Math.round( fraction * 100, 2 ) + '%';
+
+				}
 
 			}
 
