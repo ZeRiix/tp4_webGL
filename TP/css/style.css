@@ -1,25 +1,36 @@
+/* Fonts */
+
+@import url('https://fonts.googleapis.com/css2?family=Russo+One&display=swap');
+
 body {
   width: 100vw;
   height: 100vh;
   margin: 0;
   padding: 0;
   overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
-/*
+
 canvas {
   position: absolute;
   top:0;
   left:0;
-  z-index: -1;
+  z-index: auto;
 }
+
 #text-box {
+  display: block;
   font-size: 60px;
-  font-family: 'Raleway', sans-serif;
+  font-family: 'Russo One', sans-serif;
   letter-spacing: 7px;
   word-spacing: 12px;
   text-transform: uppercase;
   color:rgb(238, 238, 238);
+  z-index: 1;
 }
+
 #overlay {
   display: flex;
   justify-content: center;
@@ -28,7 +39,20 @@ canvas {
   flex-direction: row;
 }
 
-*/
+#buttonInit {
+  display: inline-block;
+  font-size: 15px;
+  font-weight: bold;
+  padding: 15px;
+  margin-left:20px;
+  margin-right:20px;
+  word-spacing: normal;
+  letter-spacing: 4px;
+  border: 1px solid white;
+  background: black;
+  cursor: pointer;
+  z-index: 1;
+}
 
 #button {
   display: inline-block;
@@ -44,8 +68,11 @@ canvas {
   border: 2px solid black;
   background: whitesmoke;
   cursor: pointer;
-  font-family: 'Raleway', sans-serif;
+  font-family: 'Russo One', sans-serif;
   letter-spacing: 5px;
+  z-index: 1;
+  top: 0;
+  left: 5%;
 }
 
 #buttonClose {
@@ -63,8 +90,11 @@ canvas {
   border: 2px solid black;
   background: whitesmoke;
   cursor: pointer;
-  font-family: 'Raleway', sans-serif;
+  font-family: 'Russo One', sans-serif;
   letter-spacing: 5px;
+  z-index: 1;
+  top: 0;
+  left: 16%;
 }
 
 #button:hover {
@@ -76,3 +106,9 @@ canvas {
   background-color: indianred;
   color: whitesmoke;
 }
+
+#buttonInit:hover {
+  color: black;
+  background-color: whitesmoke;
+}
+
