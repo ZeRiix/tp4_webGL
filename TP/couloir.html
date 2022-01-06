@@ -34,7 +34,7 @@
 	<script>
 
 			let scene, camera, renderer, stars, starGeo;
-			
+
 
 			function startPage() {
 
@@ -50,6 +50,8 @@
 			renderer = new THREE.WebGLRenderer();
 			renderer.setSize(window.innerWidth, window.innerHeight);
 			document.body.appendChild(renderer.domElement);
+
+
 
 			// create an AudioListener and add it to the camera
 			const listener = new THREE.AudioListener();
@@ -187,7 +189,7 @@
 				
 				camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 10000 );
 				camera.position.set( 700, 5000, 10 );
-				camera.position.z = 3500;
+				camera.position.z = 5000;
 				camera.position.x = -3500;
 				camera.position.y = 3000;
 
@@ -213,6 +215,9 @@
 				progressBarDiv.style.top = '50%';
 				progressBarDiv.style.width = '100%';
 				progressBarDiv.style.textAlign = 'center';
+
+				const light = new THREE.AmbientLight( 0x404040 ); // soft white light
+				scene.add( light );
 
 
 				animate();
@@ -300,7 +305,7 @@
 				scene.add(shadowCameraHelper);
 				
 
-				// Textures navette
+				// Textures shuttle
 
 				const groundCorridortexture = new THREE.TextureLoader().load( './textures/texture-sol-navette.jpg' );
 				const wallCorridortexture = new THREE.TextureLoader().load( './textures/texture-mur-navette.jpg' );
@@ -313,7 +318,7 @@
 				const groundNeptunetexture = new THREE.TextureLoader().load('./textures/texture-neptune.jpg');
 				const groundSuntexture = new THREE.TextureLoader().load('./textures/texture-sun.png');
 
-				// Ground materiaux
+				// Ground materials
 
 				const groundMoonmaterial = new THREE.MeshPhongMaterial( { map:groundMoontexture } );
 				const groundNeptunematerial = new THREE.MeshPhongMaterial( { map:groundNeptunetexture } );
@@ -407,9 +412,185 @@
 
 				// load a sound and set it as the Audio object's buffer
 				const audioLoader = new THREE.AudioLoader();
-				
 
+				// Cockpit
+
+				//cockpit ground
+
+				const cockpitgroundgeo = new THREE.BoxGeometry( 3000, 100, 4000 );
+				const cockpitgroundmat = new THREE.MeshPhongMaterial( {map: groundCorridortexture} );
+				const cockpitground = new THREE.Mesh( cockpitgroundgeo, cockpitgroundmat );
+				cockpitground.position.x = -3250;
+				cockpitground.position.y = 0;
+				cockpitground.position.z = 0;
+				cockpitground.castShadow = true;
+				cockpitground.receiveShadow = true; 
+				scene.add( cockpitground );
+
+				//cockpit roof
+
+				const cockpitroofgeo = new THREE.BoxGeometry( 1500, 100, 4000 );
+				const cockpitroofmat = new THREE.MeshPhongMaterial( {map: groundCorridortexture} );
+				const cockpitroof = new THREE.Mesh( cockpitroofgeo, cockpitroofmat );
+				cockpitroof.position.x = -2500;
+				cockpitroof.position.y = 1500;
+				cockpitroof.position.z = 0; 
+				cockpitroof.castShadow = true;
+				cockpitroof.receiveShadow = true; 
+				scene.add( cockpitroof );
+
+				//cockpit entrance wall1
+
+				const cockpitetrw1geo = new THREE.BoxGeometry( 100, 1500, 1350 );
+				const cockpitetrw1mat = new THREE.MeshPhongMaterial( {map: groundCorridortexture} );
+				const cockpitetrw1 = new THREE.Mesh( cockpitetrw1geo, cockpitetrw1mat );
+				cockpitetrw1.position.x = -1800;
+				cockpitetrw1.position.y = 700;
+				cockpitetrw1.position.z = -1300; 
+				cockpitetrw1.castShadow = true;
+				cockpitetrw1.receiveShadow = true; 
+				scene.add( cockpitetrw1 );
 			
+				//cockpit entrance wall2
+
+				const cockpitetrw2geo = new THREE.BoxGeometry( 100, 1500, 1350 );
+				const cockpitetrw2mat = new THREE.MeshPhongMaterial( {map: groundCorridortexture} );
+				const cockpitetrw2 = new THREE.Mesh( cockpitetrw2geo, cockpitetrw2mat );
+				cockpitetrw2.position.x = -1800;
+				cockpitetrw2.position.y = 700;
+				cockpitetrw2.position.z = 1300; 
+				cockpitetrw2.castShadow = true;
+				cockpitetrw2.receiveShadow = true; 
+				scene.add( cockpitetrw2 );
+
+				//cockpit front 
+
+				const cockpitfrontgeo = new THREE.BoxGeometry( 100, 750, 4000 );
+				const cockpitfrontmat = new THREE.MeshPhongMaterial( {map: groundCorridortexture} );
+				const cockpitfront = new THREE.Mesh( cockpitfrontgeo, cockpitfrontmat );
+				cockpitfront.position.x = -4750;
+				cockpitfront.position.y = 350;
+				cockpitfront.position.z = 0; 
+				cockpitfront.castShadow = true;
+				cockpitfront.receiveShadow = true; 
+				scene.add( cockpitfront );
+
+				//cockpit side1
+
+				const cockpitside1geo = new THREE.BoxGeometry( 1500, 1500, 100 );
+				const cockpitside1mat = new THREE.MeshPhongMaterial( {map: groundCorridortexture} );
+				const cockpitside1 = new THREE.Mesh( cockpitside1geo, cockpitside1mat );
+				cockpitside1.position.x = -2500;
+				cockpitside1.position.y = 700;
+				cockpitside1.position.z = 1950; 
+				cockpitside1.castShadow = true;
+				cockpitside1.receiveShadow = true; 
+				scene.add( cockpitside1 );
+
+				//cockpit side2
+
+				const cockpitside2geo = new THREE.BoxGeometry( 1500, 1500, 100 );
+				const cockpitside2mat = new THREE.MeshPhongMaterial( {map: groundCorridortexture} );
+				const cockpitside2 = new THREE.Mesh( cockpitside2geo, cockpitside2mat );
+				cockpitside2.position.x = -2500;
+				cockpitside2.position.y = 700;
+				cockpitside2.position.z = -1950; 
+				cockpitside2.castShadow = true;
+				cockpitside2.receiveShadow = true; 
+				scene.add( cockpitside2 );
+
+				//cockpit minorSide1
+
+				const cockpitminorSide1geo = new THREE.BoxGeometry( 1500, 750, 100 );
+				const cockpitminorSide1mat = new THREE.MeshPhongMaterial( {map: groundCorridortexture} );
+				const cockpitminorSide1 = new THREE.Mesh( cockpitminorSide1geo, cockpitminorSide1mat );
+				cockpitminorSide1.position.x = -4000;
+				cockpitminorSide1.position.y = 350;
+				cockpitminorSide1.position.z = 1950; 
+				cockpitminorSide1.castShadow = true;
+				cockpitminorSide1.receiveShadow = true; 
+				scene.add( cockpitminorSide1 );
+
+				//cockpit minorSide2
+
+				const cockpitminorSide2geo = new THREE.BoxGeometry( 1500, 750, 100 );
+				const cockpitminorSide2mat = new THREE.MeshPhongMaterial( {map: groundCorridortexture} );
+				const cockpitminorSide2 = new THREE.Mesh( cockpitminorSide2geo, cockpitminorSide2mat );
+				cockpitminorSide2.position.x = -4000;
+				cockpitminorSide2.position.y = 350;
+				cockpitminorSide2.position.z = -1950; 
+				cockpitminorSide2.castShadow = true;
+				cockpitminorSide2.receiveShadow = true; 
+				scene.add( cockpitminorSide2 );
+
+				//cockpit front pane
+
+				const cockpitfrontPanegeo = new THREE.BoxGeometry( 100, 750, 4000 );
+				const cockpitfrontPanemat = new THREE.MeshPhysicalMaterial({
+					color : 0x7a7a7a,
+					metalness: 0,
+					roughness: 0,
+					transmission: 1, 
+					opacity : 1,
+					transparent: true
+				});
+				const cockpitfrontPane = new THREE.Mesh( cockpitfrontPanegeo, cockpitfrontPanemat );
+				cockpitfrontPane.position.x = -4750;
+				cockpitfrontPane.position.y = 1000;
+				cockpitfrontPane.position.z = 0; 
+				scene.add( cockpitfrontPane );
+
+				//cockpit top pane
+
+				const cockpittopPanegeo = new THREE.BoxGeometry( 1500, 100, 4000 );
+				const cockpittopPanemat = new THREE.MeshPhysicalMaterial( {
+					color : 0x7a7a7a,
+					metalness: 0,
+					roughness: 0,
+					transmission: 1, 
+					opacity : 1,
+					transparent: true
+				} );
+				const cockpittopPane = new THREE.Mesh( cockpittopPanegeo, cockpittopPanemat );
+				cockpittopPane.position.x = -4000;
+				cockpittopPane.position.y = 1500;
+				cockpittopPane.position.z = 0; 
+				scene.add( cockpittopPane );
+
+				//cockpit side pane1
+
+				const cockpitsidePane1geo = new THREE.BoxGeometry( 1500, 750, 100 );
+				const cockpitsidePane1mat = new THREE.MeshPhysicalMaterial( {
+					color : 0x7a7a7a,
+					metalness: 0,
+					roughness: 0,
+					transmission: 1, 
+					opacity : 1,
+					transparent: true
+				} );
+				const cockpitsidePane1 = new THREE.Mesh( cockpitsidePane1geo, cockpitsidePane1mat );
+				cockpitsidePane1.position.x = -4000;
+				cockpitsidePane1.position.y = 1000;
+				cockpitsidePane1.position.z = 1950; 
+				scene.add( cockpitminorSide1 );
+
+				//cockpit side pane2
+
+				const cockpitsidePane2geo = new THREE.BoxGeometry( 1500, 750, 100 );
+				const cockpitsidePane2mat = new THREE.MeshPhysicalMaterial( {
+					color : 0x7a7a7a,
+					metalness: 0,
+					roughness: 0,
+					transmission: 1, 
+					opacity : 1,
+					transparent: true
+				} );
+				const cockpitsidePane2 = new THREE.Mesh( cockpitsidePane2geo, cockpitsidePane2mat );
+				cockpitsidePane2.position.x = -4000;
+				cockpitsidePane2.position.y = 1000;
+				cockpitsidePane2.position.z = 1950; 
+				scene.add( cockpitminorSide2 );
+
 				
 				document.getElementById('button').onclick = function openDoor() {
 					
