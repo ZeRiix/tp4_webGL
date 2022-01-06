@@ -123,11 +123,11 @@
 		<script type="module">
 
 			import * as THREE from '../build/three.module.js';
-			//import { OrbitControls } from './jsm/controls/OrbitControls.js';
+			import { OrbitControls } from './jsm/controls/OrbitControls.js';
 			import { GUI } from './jsm/libs/dat.gui.module.js';
 			import Stats from './jsm/libs/stats.module.js';
 			import * as MATERIAL from './material.module.js';
-			import { FirstPersonControls } from './jsm/controls/FirstPersonControls.js';
+			//import { FirstPersonControls } from './jsm/controls/FirstPersonControls.js';
 			
 			let camera, scene, renderer, controls, stats;
 			let groundCorridor, ground, wall1Corridor, wall2Corridor, wallBackCorridor, door1, door2, window1, window2;
@@ -137,7 +137,7 @@
 			let showCameraHelper = false;
 			let showLightHelper = false;
 
-			const clock = new THREE.Clock();
+			//const clock = new THREE.Clock();
 			
 
 
@@ -227,7 +227,7 @@
 				let textBox = document.getElementById('text-box').style.display = 'none';
 
 				
-				camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 10000 );
+				camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 15000 );
 				camera.position.set( 700, 5000, 10 );
 				camera.position.z = 5000;
 				camera.position.x = -3500;
@@ -705,6 +705,15 @@
 						hideProgressBar();
 					} else {
 						while(door1positionZ > 320 && door2positionZ < -320) {
+
+							if (door1positionZ == 320 && door2positionZ == -320) {
+							audioLoader.load( 'sounds/ouverture-porte.mp3', function( buffer ) {
+							sound.setBuffer( buffer );
+							sound.setLoop( false );
+							sound.setVolume( 0.5 );
+							sound.play();
+						});
+						}
 							
 							// Vitesse de l'animation
 							door1positionZ += -100;
@@ -743,15 +752,26 @@
 
 				// Orbit controls
 
-				/*controls = new OrbitControls( camera, renderer.domElement );
+				controls = new OrbitControls( camera, renderer.domElement );
 				controls.addEventListener( 'change', render );
 				controls.minDistance = 20;
 				controls.maxDistance = 5000;
-				controls.enablePan = false;*/
+				controls.enablePan = false;
 
-				controls = new FirstPersonControls( camera, renderer.domElement );
-				controls.movementSpeed = 150;
-				controls.lookSpeed = 0.1;
+				/*controls = new FirstPersonControls( camera, renderer.domElement );
+
+				controls.movementSpeed = 2500;
+				controls.lookSpeed = 0.8;
+				controls.noFly = true;
+				controls.lookVertical = true;
+                controls.lookHorizontal = true;
+
+                controls.keys = {
+	                LEFT: 'keyQ', //left arrow
+	                UP: 'keyZ', // up arrow
+	                RIGHT: 'keyR', // right arrow
+	                BOTTOM: 'keyS' // down arrow
+                }*/
 
 
 				window.addEventListener( 'resize', onWindowResize );
@@ -800,6 +820,8 @@
 
 			renderer.render( scene, camera );
 
+			scene.rotation.y += 0.01;
+
 			stats.update();
 
 			}
@@ -812,7 +834,7 @@
 
 			renderer.setSize( window.innerWidth, window.innerHeight );
 
-			controls.handleResize();
+			//controls.handleResize();
 
 			}
 
@@ -827,7 +849,7 @@
 
 			renderer.render( scene, camera );
 
-			controls.update( clock.getDelta() );
+			//controls.update( clock.getDelta() );
 
 			}
 

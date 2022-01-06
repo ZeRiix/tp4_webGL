@@ -77,6 +77,7 @@ canvas {
   border-radius: 25px;
   top: 0;
   left: 5%;
+  color: green;
 }
 
 #buttonClose {
