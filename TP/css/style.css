@@ -127,3 +127,12 @@ canvas {
   transform: scale(0.98);
   box-shadow: none;
 }
+
+a{
+  text-decoration: none;
+  color: white;
+}
+
+a:hover {
+  color: black;
+}
