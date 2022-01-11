@@ -145,7 +145,7 @@
                 container.appendChild(stats.dom);
 
 				let buttonClose = document.getElementById('buttonClose').style.display = 'inline-block';
-				let buttonOpen = document.getElementById('button').style.display = 'inline-block';
+				let buttonOpen = document.getElementById('button').style.display = 'inline-block';	
 
 				
 				camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 100000 );
@@ -322,6 +322,83 @@
 							moon.castShadow = true;
 							
 							scene.add(moon);
+
+
+							render();
+
+						} );
+
+						const boxes_loader = new GLTFLoader().setPath( './structure/' );
+						boxes_loader.load( 'box-Space.glb', function ( gltf ) {
+
+							let boxes = gltf.scene
+							boxes.scale.x = 100;
+							boxes.scale.y = 100;
+							boxes.scale.z = 100;
+							boxes.position.x = -1200;
+							boxes.position.z = 300;
+							boxes.position.y = -100;
+							boxes.positionreceiveShadow = true;
+							boxes.castShadow = true;
+							
+							scene.add(boxes);
+
+
+							render();
+
+						} );
+						
+						boxes_loader.load( 'box-Space.glb', function ( gltf ) {
+
+							let boxes2 = gltf.scene
+							boxes2.scale.x = 100;
+							boxes2.scale.y = 100;
+							boxes2.scale.z = 100;
+							boxes2.position.x = 1200;
+							boxes2.position.z = 300;
+							boxes2.position.y = -100;
+							boxes2.positionreceiveShadow = true;
+							boxes2.castShadow = true;
+							
+							scene.add(boxes2);
+
+
+							render();
+
+						} );
+						
+						boxes_loader.load( 'box-Space.glb', function ( gltf ) {
+
+							let boxes3 = gltf.scene
+							boxes3.scale.x = 100;
+							boxes3.scale.y = 100;
+							boxes3.scale.z = 100;
+							boxes3.position.x = 2200;
+							boxes3.position.z = -600;
+							boxes3.position.y = -100;
+							boxes3.positionreceiveShadow = true;
+							boxes3.castShadow = true;
+							
+							scene.add(boxes3);
+
+
+							render();
+
+						} );
+						
+						boxes_loader.load( 'box-Space.glb', function ( gltf ) {
+
+							let boxes4 = gltf.scene
+							boxes4.scale.x = 100;
+							boxes4.scale.y = 100;
+							boxes4.scale.z = 100;
+							boxes4.position.x = 4000;
+							boxes4.position.z = -600;
+							boxes4.position.y = -100;
+							boxes4.positionreceiveShadow = true;
+							boxes4.castShadow = true;
+							
+							scene.add(boxes4);
 
 
 							render();
