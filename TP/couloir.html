@@ -10,18 +10,8 @@
 	<body>
 
 
-		  <div id="buttonDoor">
-		  <div id="button">
-			  Let's open
-		  </div>
-		  <div id="buttonClose">
-			  Let's close
-		  </div>
-		</div>
 
-		<div id="container">
-
-		</div>
+		<div id="container"></div>
 		
 	
 		<script type="module">
@@ -36,7 +26,7 @@
 			import { GLTFLoader } from './jsm/loaders/GLTFLoader.js';
 			
 			let camera, scene, renderer, controls, stats, planeteJupiter;
-			let groundCorridor, ground, wall1Corridor, wall2Corridor, wallBackCorridor, door1, door2, window1, window2;
+			let groundCorridor, ground;
 			let spotLight, spotLightLeft, spotLightRight, spotLightBack, lightHelper, shadowCameraHelper, gui, AxeHelper;
 			let corridorStarWars;
 			let moonGround = false;
@@ -52,15 +42,12 @@
 			let mixer;
 			
 
-
 			function buildGui() {
 
 			gui = new GUI();
 
 			const params = {
 			'Sol': Object.keys(MATERIAL.groundFileList)[0],
-			Door1PositionZ: door1.position.z,
-			Door2PositionZ: door2.position.z,
 			AxeHelper: showAxeHelper,
 			LightHelper: showLightHelper,
 			ShadowHelper: showCameraHelper
@@ -69,31 +56,10 @@
 			gui.open();
 
 			gui.add( params, 'Sol', Object.keys(MATERIAL.groundFileList)).name('Texture sol:').onChange(val => {
-				if (val == "Lune") {
-					moonGround = true;
-				} else {
-					moonGround = false;
-				}
-				console.log(moonGround);
+				
 				ground.material = MATERIAL.groundFileList[val];
 				console.log(val);
 			});
-
-			gui.add( params, 'Door1PositionZ', 320, 920 ).name( 'Door1PositionZ' ).onChange( function ( val ) {
-
-			door1.position.z = val;
-			console.log(val);
-			render();
-
-			} );
-
-
-			gui.add( params, 'Door2PositionZ', 320, 920 ).name( 'Door2PositionZ' ).onChange( function ( val ) {
-
-			door2.position.z = -val;
-			render();
-
-			} );
 
 			gui.add( params, 'AxeHelper' ).name( 'Axe Helpers' ).onChange(() => {
             if(!showAxeHelper){
@@ -135,17 +101,12 @@
 
 				let containere, progressBarDiv;
 
-				let Door = door1;
-
 				containere = document.createElement( 'div' );
 				document.body.appendChild( containere );
 
 				const container = document.getElementById('container');
                 stats = new Stats();
                 container.appendChild(stats.dom);
-
-				let buttonClose = document.getElementById('buttonClose').style.display = 'inline-block';
-				let buttonOpen = document.getElementById('button').style.display = 'inline-block';	
 
 				
 				camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 100000 );
@@ -405,107 +366,11 @@
 
 						} );
 
-						
-					
-					
-						
-
-	
-				
-
-				// Textures shuttle
-
-				const groundCorridortexture = new THREE.TextureLoader().load( './textures/texture-sol-navette.jpg' );
-				const wallCorridortexture = new THREE.TextureLoader().load( './textures/texture-mur-navette.jpg' );
-				const doorTexture = new THREE.TextureLoader().load( './textures/porte-spatiale.jpg' );
-
-				// Ground texture
-
-				const groundMarstexture = new THREE.TextureLoader().load( './textures/sol-texture-mars.jpg' );
-				const groundMoontexture = new THREE.TextureLoader().load('./textures/texture-moon.jpg');
-				const groundNeptunetexture = new THREE.TextureLoader().load('./textures/texture-neptune.jpg');
-				const groundSuntexture = new THREE.TextureLoader().load('./textures/texture-sun.png');
-
-				// Ground materials
-
-				const groundMoonmaterial = new THREE.MeshPhongMaterial( { map:groundMoontexture } );
-				const groundNeptunematerial = new THREE.MeshPhongMaterial( { map:groundNeptunetexture } );
-				const groundSunmaterial = new THREE.MeshPhongMaterial( { map:groundSuntexture } );
-
-				/* Couloir */
-
-				const groundCorridormaterial = new THREE.MeshPhongMaterial( { map:groundCorridortexture } );
-				const groundCorridorgeometry = new THREE.BoxGeometry( 3500, 1200, 50 );
-				
-				groundCorridor = new THREE.Mesh( groundCorridorgeometry, groundCorridormaterial );
-				groundCorridor.rotation.x = Math.PI * 0.5;
-				groundCorridor.receiveShadow = true;
-				groundCorridor.position.y = 50;
-				//scene.add( groundCorridor );
-
-				
 				const groundGeometry = new THREE.BoxGeometry( 15000, 15000, 50 );
 				ground = new THREE.Mesh( groundGeometry, MATERIAL.groundFileList.Mars );
 				ground.rotation.x = Math.PI * 0.5;
 				ground.receiveShadow = true;
 				scene.add( ground );
-
-
-				const wall1Corridormaterial = new THREE.MeshPhongMaterial( { map:wallCorridortexture } );
-				const wall1Corridorgeometry = new THREE.BoxGeometry(3500, 1500, 50);
-
-				wall1Corridor = new THREE.Mesh( wall1Corridorgeometry, wall1Corridormaterial );
-				wall1Corridor.position.y = 775;
-				wall1Corridor.position.z = 625;
-				wall1Corridor.castShadow = true;
-				wall1Corridor.receiveShadow = true;
-				//scene.add(wall1Corridor);
-
-				const wall2Corridormaterial = new THREE.MeshPhongMaterial( { map:wallCorridortexture } );
-				const wall2Corridorgeometry = new THREE.BoxGeometry(3500, 1500, 50);
-
-				wall2Corridor = new THREE.Mesh( wall2Corridorgeometry, wall2Corridormaterial );
-				wall2Corridor.position.y = 775;
-				wall2Corridor.position.z = -625;
-				wall2Corridor.castShadow = true;
-				wall2Corridor.receiveShadow = true;
-				//scene.add(wall2Corridor);
-
-				const wallBackCorridormaterial = new THREE.MeshPhongMaterial( { map:wallCorridortexture } );
-				const wallBackCorridorgeometry = new THREE.BoxGeometry(1300, 1500, 50);
-
-				wallBackCorridor = new THREE.Mesh( wallBackCorridorgeometry, wallBackCorridormaterial );
-				wallBackCorridor.position.y = 775;
-				wallBackCorridor.position.z = 0; 
-				wallBackCorridor.position.x = 1770;
-				wallBackCorridor.rotation.y = Math.PI * 0.5;
-				wallBackCorridor.castShadow = true;
-				wallBackCorridor.receiveShadow = true;
-				//scene.add(wallBackCorridor);
-
-				const door1material = new THREE.MeshPhongMaterial( { map:doorTexture } );
-				const door1geometry = new THREE.BoxGeometry(650, 1500,20); 
-
-				door1 = new THREE.Mesh( door1geometry, door1material );
-				door1.position.y = 775;
-				door1.position.z = 320; 
-				door1.position.x = -1760;
-				door1.rotation.y = Math.PI * 0.5;
-				door1.castShadow = true;
-				door1.receiveShadow = true;
-				//scene.add(door1);
-
-				const door2material = new THREE.MeshPhongMaterial( { map:doorTexture } );
-				const door2geometry = new THREE.BoxGeometry(650, 1500,20); 
-
-				door2 = new THREE.Mesh( door2geometry, door2material );
-				door2.position.y = 775;
-				door2.position.z = -320; 
-				door2.position.x = -1760;
-				door2.rotation.y = Math.PI * 0.5;
-				door2.castShadow = true;
-				door2.receiveShadow = true;
-				//scene.add(door2);
 
 
 			
@@ -521,300 +386,6 @@
 				// load a sound and set it as the Audio object's buffer
 				const audioLoader = new THREE.AudioLoader();
 
-				// Cockpit
-
-				//cockpit ground
-
-				const cockpitgroundgeo = new THREE.BoxGeometry( 3000, 100, 4000 );
-				const cockpitgroundmat = new THREE.MeshPhongMaterial( {map: groundCorridortexture} );
-				const cockpitground = new THREE.Mesh( cockpitgroundgeo, cockpitgroundmat );
-				cockpitground.position.x = -3250;
-				cockpitground.position.y = 0;
-				cockpitground.position.z = 0;
-				cockpitground.castShadow = true;
-				cockpitground.receiveShadow = true; 
-				//scene.add( cockpitground );
-
-				//cockpit roof
-
-				const cockpitroofgeo = new THREE.BoxGeometry( 1500, 100, 4000 );
-				const cockpitroofmat = new THREE.MeshPhongMaterial( {map: groundCorridortexture} );
-				const cockpitroof = new THREE.Mesh( cockpitroofgeo, cockpitroofmat );
-				cockpitroof.position.x = -2500;
-				cockpitroof.position.y = 1500;
-				cockpitroof.position.z = 0; 
-				cockpitroof.castShadow = true;
-				cockpitroof.receiveShadow = true; 
-				//scene.add( cockpitroof );
-
-				//cockpit entrance wall1
-
-				const cockpitetrw1geo = new THREE.BoxGeometry( 100, 1500, 1350 );
-				const cockpitetrw1mat = new THREE.MeshPhongMaterial( {map: groundCorridortexture} );
-				const cockpitetrw1 = new THREE.Mesh( cockpitetrw1geo, cockpitetrw1mat );
-				cockpitetrw1.position.x = -1800;
-				cockpitetrw1.position.y = 700;
-				cockpitetrw1.position.z = -1300; 
-				cockpitetrw1.castShadow = true;
-				cockpitetrw1.receiveShadow = true; 
-				//scene.add( cockpitetrw1 );
-			
-				//cockpit entrance wall2
-
-				const cockpitetrw2geo = new THREE.BoxGeometry( 100, 1500, 1350 );
-				const cockpitetrw2mat = new THREE.MeshPhongMaterial( {map: groundCorridortexture} );
-				const cockpitetrw2 = new THREE.Mesh( cockpitetrw2geo, cockpitetrw2mat );
-				cockpitetrw2.position.x = -1800;
-				cockpitetrw2.position.y = 700;
-				cockpitetrw2.position.z = 1300; 
-				cockpitetrw2.castShadow = true;
-				cockpitetrw2.receiveShadow = true; 
-				//scene.add( cockpitetrw2 );
-
-				//cockpit front 
-
-				const cockpitfrontgeo = new THREE.BoxGeometry( 100, 750, 4000 );
-				const cockpitfrontmat = new THREE.MeshPhongMaterial( {map: groundCorridortexture} );
-				const cockpitfront = new THREE.Mesh( cockpitfrontgeo, cockpitfrontmat );
-				cockpitfront.position.x = -4750;
-				cockpitfront.position.y = 350;
-				cockpitfront.position.z = 0; 
-				cockpitfront.castShadow = true;
-				cockpitfront.receiveShadow = true; 
-				//scene.add( cockpitfront );
-
-				//cockpit side1
-
-				const cockpitside1geo = new THREE.BoxGeometry( 1500, 1500, 100 );
-				const cockpitside1mat = new THREE.MeshPhongMaterial( {map: groundCorridortexture} );
-				const cockpitside1 = new THREE.Mesh( cockpitside1geo, cockpitside1mat );
-				cockpitside1.position.x = -2500;
-				cockpitside1.position.y = 700;
-				cockpitside1.position.z = 1950; 
-				cockpitside1.castShadow = true;
-				cockpitside1.receiveShadow = true; 
-				//scene.add( cockpitside1 );
-
-				//cockpit side2
-
-				const cockpitside2geo = new THREE.BoxGeometry( 1500, 1500, 100 );
-				const cockpitside2mat = new THREE.MeshPhongMaterial( {map: groundCorridortexture} );
-				const cockpitside2 = new THREE.Mesh( cockpitside2geo, cockpitside2mat );
-				cockpitside2.position.x = -2500;
-				cockpitside2.position.y = 700;
-				cockpitside2.position.z = -1950; 
-				cockpitside2.castShadow = true;
-				cockpitside2.receiveShadow = true; 
-				//scene.add( cockpitside2 );
-
-				//cockpit minorSide1
-
-				const cockpitminorSide1geo = new THREE.BoxGeometry( 1500, 750, 100 );
-				const cockpitminorSide1mat = new THREE.MeshPhongMaterial( {map: groundCorridortexture} );
-				const cockpitminorSide1 = new THREE.Mesh( cockpitminorSide1geo, cockpitminorSide1mat );
-				cockpitminorSide1.position.x = -4000;
-				cockpitminorSide1.position.y = 350;
-				cockpitminorSide1.position.z = 1950; 
-				cockpitminorSide1.castShadow = true;
-				cockpitminorSide1.receiveShadow = true; 
-				//scene.add( cockpitminorSide1 );
-
-
-				//cockpit minorSide2
-
-				const cockpitminorSide2geo = new THREE.BoxGeometry( 1500, 750, 100 );
-				const cockpitminorSide2mat = new THREE.MeshPhongMaterial( {map: groundCorridortexture} );
-				const cockpitminorSide2 = new THREE.Mesh( cockpitminorSide2geo, cockpitminorSide2mat );
-				cockpitminorSide2.position.x = -4000;
-				cockpitminorSide2.position.y = 350;
-				cockpitminorSide2.position.z = -1950; 
-				cockpitminorSide2.castShadow = true;
-				cockpitminorSide2.receiveShadow = true; 
-				//scene.add( cockpitminorSide2 );
-
-				//cockpit front pane
-
-				const cockpitfrontPanegeo = new THREE.BoxGeometry( 100, 750, 4000 );
-				const cockpitfrontPanemat = new THREE.MeshPhysicalMaterial({
-					color : 0x7a7a7a,
-					metalness: 0,
-					roughness: 0,
-					transmission: 1, 
-					opacity : 1,
-					transparent: true
-				});
-				const cockpitfrontPane = new THREE.Mesh( cockpitfrontPanegeo, cockpitfrontPanemat );
-				cockpitfrontPane.position.x = -4750;
-				cockpitfrontPane.position.y = 1000;
-				cockpitfrontPane.position.z = 0; 
-				//scene.add( cockpitfrontPane );
-
-				//cockpit top pane
-
-				const cockpittopPanegeo = new THREE.BoxGeometry( 1500, 100, 4000 );
-				const cockpittopPanemat = new THREE.MeshPhysicalMaterial( {
-					color : 0x7a7a7a,
-					metalness: 0,
-					roughness: 0,
-					transmission: 1, 
-					opacity : 1,
-					transparent: true
-				} );
-				const cockpittopPane = new THREE.Mesh( cockpittopPanegeo, cockpittopPanemat );
-				cockpittopPane.position.x = -4000;
-				cockpittopPane.position.y = 1500;
-				cockpittopPane.position.z = 0; 
-				//scene.add( cockpittopPane );
-
-				//cockpit side pane1
-
-				const cockpitsidePane1geo = new THREE.BoxGeometry( 1500, 750, 100 );
-				const cockpitsidePane1mat = new THREE.MeshPhysicalMaterial( {
-					color : 0x7a7a7a,
-					metalness: 0,
-					roughness: 0,
-					transmission: 1, 
-					opacity : 1,
-					transparent: true
-				} );
-				const cockpitsidePane1 = new THREE.Mesh( cockpitsidePane1geo, cockpitsidePane1mat );
-				cockpitsidePane1.position.x = -4000;
-				cockpitsidePane1.position.y = 1000;
-				cockpitsidePane1.position.z = 1950; 
-				//scene.add( cockpitminorSide1 );
-
-				//cockpit side pane2
-
-				const cockpitsidePane2geo = new THREE.BoxGeometry( 1500, 750, 100 );
-				const cockpitsidePane2mat = new THREE.MeshPhysicalMaterial( {
-					color : 0x7a7a7a,
-					metalness: 0,
-					roughness: 0,
-					transmission: 1, 
-					opacity : 1,
-					transparent: true
-				} );
-				const cockpitsidePane2 = new THREE.Mesh( cockpitsidePane2geo, cockpitsidePane2mat );
-				cockpitsidePane2.position.x = -4000;
-				cockpitsidePane2.position.y = 1000;
-				cockpitsidePane2.position.z = 1950; 
-				//scene.add( cockpitminorSide2 );
-
-				
-				document.getElementById('button').onclick = function openDoor() {
-					
-					showProgressBar();
-					updateProgressBar( 0 );
-
-					let door1positionZ = door1.position.z;
-					let door2positionZ = door2.position.z;
-					console.log("Door1: " + door1positionZ +" "+" "+ "Door2: " + door2positionZ);
-
-					if (door1positionZ == 920 && door2positionZ == -920){
-						alert("Les portes sont déjà ouverte!");
-						hideProgressBar();
-					} else {
-						while(door1positionZ < 920 && door2positionZ > -920) {
-						
-						if (door1positionZ == 320 && door2positionZ == -320) {
-							audioLoader.load( 'sounds/ouverture-porte.mp3', function( buffer ) {
-							sound.setBuffer( buffer );
-							sound.setLoop( false );
-							sound.setVolume( 0.5 );
-							sound.play();
-						});
-						}
-
-						// Vitesse de l'animation
-						door1positionZ += 100;
-						door2positionZ += -100;
-						console.log(door1positionZ);
-						console.log(door2positionZ);
-
-						// Fin d'animation
-						if(door1positionZ == 920 && door2positionZ == -920) {
-							console.log("Position final door1: " + door1positionZ,
-							"Position final door2: " + door2positionZ);
-							if (document.getElementById('buttonClose').style.color = 'red') {
-								document.getElementById('button').style.color = 'black';
-							} else {
-							document.getElementById('button').style.color = 'green';
-							}
-							alert('Porte ouverte!');
-							
-						}
-						
-						
-						door1.position.z = door1positionZ;
-						door2.position.z = door2positionZ;
-						render();
-						
-					}
-					hideProgressBar();
-					
-				}
-
-				}
-
-				document.getElementById('buttonClose').onclick = function closeDoor() {
-
-					showProgressBar();
-					updateProgressBar( 0 );
-
-					let door1positionZ = door1.position.z;
-					let door2positionZ = door2.position.z;
-					console.log("Door1: " + door1positionZ +" "+" "+ "Door2: " + door2positionZ);
-					
-
-					if (door1positionZ == 320 && door2positionZ == -320){
-						alert("Les portes sont déjà fermées!");
-						hideProgressBar();
-					} else {
-						while(door1positionZ > 320 && door2positionZ < -320) {
-
-							if (door1positionZ == 320 && door2positionZ == -320) {
-							audioLoader.load( 'sounds/ouverture-porte.mp3', function( buffer ) {
-							sound.setBuffer( buffer );
-							sound.setLoop( false );
-							sound.setVolume( 0.5 );
-							sound.play();
-						});
-						}
-							
-							// Vitesse de l'animation
-							door1positionZ += -100;
-							door2positionZ += 100;
-							console.log(door1positionZ);
-							console.log(door2positionZ);
-
-							// Fin d'animation
-							if(door1positionZ == 320 && door2positionZ == -320) {
-								console.log("Position final door1: " + door1positionZ,
-								"Position final door2: " + door2positionZ);
-								if (document.getElementById('button').style.color = 'green') {
-									document.getElementById('buttonClose').style.color = 'black';
-								} else {
-								document.getElementById('buttonClose').style.color = 'red';
-								}
-								alert('Porte fermée!');
-								
-
-						}
-						
-						door1.position.z = door1positionZ;
-						door2.position.z = door2positionZ;
-						render();
-						
-						}
-						hideProgressBar();
-					}
-					
-
-					
-
-					
-
-				}
 
 				// Orbit controls
 
@@ -839,14 +410,11 @@
 	                BOTTOM: 83 // down arrow
                 }*/
 
-				/*controls = new FirstPersonControls( camera, renderer.domElement );
-				controls.movementSpeed = 150;
-				controls.lookSpeed = 0.1;*/
-
 
 				window.addEventListener( 'resize', onWindowResize );
 
 				buildGui();
+			}
 
 				function onProgress( xhr ) {
 
@@ -878,7 +446,6 @@
 
 				}
 
-			}
 
 			
 
@@ -897,8 +464,6 @@
 
 			stats.update();
 
-
-			
 
 			}
 
