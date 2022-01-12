@@ -1,5 +1,7 @@
 import * as THREE from '../build/three.module.js';
 
+const invisible = "";
+
 const groundMarstexture = new THREE.TextureLoader().load('./textures/sol-texture-mars.jpg');
 const groundMoontexture = new THREE.TextureLoader().load('./textures/texture-moon.jpg');
 const groundNeptunetexture = new THREE.TextureLoader().load('./textures/texture-neptune.jpg');
@@ -14,7 +16,8 @@ const groundFileList = {
     "Mars": groundMarsmaterial,
     "Lune": groundMoonmaterial,
     "Soleil": groundSunmaterial,
-    "Neptune": groundNeptunematerial
+    "Neptune": groundNeptunematerial,
+    "Invisible": invisible
     
     };
 

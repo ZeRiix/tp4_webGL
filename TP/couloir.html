@@ -5,13 +5,17 @@
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 		<link rel="stylesheet" href="css/style.css">
+		<link rel="shortcut icon" type="image/png" href="./textures/favicon.jpg">
 		
 	</head>
 	<body>
 
-
+		<audio id="scifiTable" loop preload="auto" style="display: none">
+            <source src="./sounds/scifiTable.mp3" type="audio/mpeg">
+        </audio>
 
 		<div id="container"></div>
+		<div id="loader"></div>
 		
 	
 		<script type="module">
@@ -35,6 +39,7 @@
 			let showCameraHelper = false;
 			let showLightHelper = false;
 			var loader = new GLTFLoader();
+			let analyser, data, songElement;
 
 
 			const clock = new THREE.Clock();
@@ -99,7 +104,7 @@
 				function init() {
 
 
-				let containere, progressBarDiv;
+				let containere;
 
 				containere = document.createElement( 'div' );
 				document.body.appendChild( containere );
@@ -110,9 +115,9 @@
 
 				
 				camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 100000 );
-				camera.position.set( 700, 5000, 10 );
+				camera.position.set( 700, 5000, 5000 );
 				camera.position.z = 5000;
-				camera.position.x = -3500;
+				camera.position.x = -8000;
 				camera.position.y = 3000;
 
 				scene = new THREE.Scene();
@@ -127,18 +132,8 @@
 				renderer.outputEncoding = THREE.sRGBEncoding;
 				
 
-				progressBarDiv = document.createElement( 'div' );
-				progressBarDiv.innerText = 'Loading...';
-				progressBarDiv.style.fontSize = '3em';
-				progressBarDiv.style.color = '#888';
-				progressBarDiv.style.display = 'block';
-				progressBarDiv.style.position = 'absolute';
-				progressBarDiv.style.fontFamily = 'Russo One';
-				progressBarDiv.style.top = '50%';
-				progressBarDiv.style.width = '100%';
-				progressBarDiv.style.textAlign = 'center';
-
 				const light = new THREE.AmbientLight( 0x404040 ); // soft white light
+				light.intensity = 0.7;
 				scene.add( light );
 
 
@@ -241,11 +236,18 @@
 
 
 							scene.add( corridor );
+							// hide spinner
+							document.getElementById( 'loader' ).style.display = 'none';
 
 
 							render();
+						
 
-						} );
+						}, function (xhr) {
+								console.log((xhr.loaded/xhr.total * 100) + "% loaded corridor");
+							}, function (error) {
+								console.log("An error occurred");
+							});
 
 						const jupiter_loader = new GLTFLoader().setPath( './structure/' );
 						jupiter_loader.load( 'planete-jupiter.glb', function ( gltf ) {
@@ -263,15 +265,24 @@
 
 
 							scene.add( jupiter );
+							// hide spinner
+							document.getElementById( 'loader' ).style.display = 'none';
 
 
 							render();
+							
 
-						} );
+						}, function (xhr) {
+								console.log((xhr.loaded/xhr.total * 100) + "% loaded jupiter");
+							}, function (error) {
+								console.log("An error occurred");
+							});
 
-						const moon_loader = new GLTFLoader().setPath( './structure/' );
-						moon_loader.load( 'planete-moon.glb', function ( gltf ) {
+							
+						const loader = new GLTFLoader().setPath( './structure/' );
+						loader.load( 'planete-moon.glb', function ( gltf ) {
 
+							//console.log(gltf);
 							let moon = gltf.scene
 							moon.scale.x = 1000;
 							moon.scale.y = 1000;
@@ -283,14 +294,22 @@
 							moon.castShadow = true;
 							
 							scene.add(moon);
-
+							
+							// hide spinner
+							document.getElementById( 'loader' ).style.display = 'none';
 
 							render();
+							
 
-						} );
+							}, function (xhr) {
+								console.log((xhr.loaded/xhr.total * 100) + "% loaded moon");
+							
+							}, function (error) {
+								console.log("An error occurred");
+							});
 
-						const boxes_loader = new GLTFLoader().setPath( './structure/' );
-						boxes_loader.load( 'box-Space.glb', function ( gltf ) {
+						
+						loader.load( 'box-Space.glb', function ( gltf ) {
 
 							let boxes = gltf.scene
 							boxes.scale.x = 100;
@@ -303,13 +322,19 @@
 							boxes.castShadow = true;
 							
 							scene.add(boxes);
-
+							// hide spinner
+							document.getElementById( 'loader' ).style.display = 'none';
 
 							render();
+							
 
-						} );
+						}, function (xhr) {
+								console.log((xhr.loaded/xhr.total * 100) + "% loaded boxes");
+							}, function (error) {
+								console.log("An error occurred");
+							});
 						
-						boxes_loader.load( 'box-Space.glb', function ( gltf ) {
+						loader.load( 'box-Space.glb', function ( gltf ) {
 
 							let boxes2 = gltf.scene
 							boxes2.scale.x = 100;
@@ -322,13 +347,19 @@
 							boxes2.castShadow = true;
 							
 							scene.add(boxes2);
-
+							// hide spinner
+							document.getElementById( 'loader' ).style.display = 'none';
 
 							render();
+							
 
-						} );
+						}, function (xhr) {
+								console.log((xhr.loaded/xhr.total * 100) + "% loaded boxes");
+							}, function (error) {
+								console.log("An error occurred");
+							});
 						
-						boxes_loader.load( 'box-Space.glb', function ( gltf ) {
+						loader.load( 'box-Space.glb', function ( gltf ) {
 
 							let boxes3 = gltf.scene
 							boxes3.scale.x = 100;
@@ -341,13 +372,19 @@
 							boxes3.castShadow = true;
 							
 							scene.add(boxes3);
+							// hide spinner
+							document.getElementById( 'loader' ).style.display = 'none';
 
 
 							render();
-
-						} );
+							
+						}, function (xhr) {
+								console.log((xhr.loaded/xhr.total * 100) + "% loaded boxes");
+							}, function (error) {
+								console.log("An error occurred");
+							});
 						
-						boxes_loader.load( 'box-Space.glb', function ( gltf ) {
+						loader.load( 'box-Space.glb', function ( gltf ) {
 
 							let boxes4 = gltf.scene
 							boxes4.scale.x = 100;
@@ -360,21 +397,44 @@
 							boxes4.castShadow = true;
 							
 							scene.add(boxes4);
+							// hide spinner
+							document.getElementById( 'loader' ).style.display = 'none';
+
+							render();
+							
+
+						}, function (xhr) {
+								console.log((xhr.loaded/xhr.total * 100) + "% loaded boxes");
+							}, function (error) {
+								console.log("An error occurred");
+							});
+
+						let scientificTable;
+
+						loader.load( 'sci-fi-table.glb', function ( gltf ) {
+
+							scientificTable = gltf.scene
+							scientificTable.scale.x = 1700;
+							scientificTable.scale.y = 1700;
+							scientificTable.scale.z = 1700;
+							scientificTable.position.x = -4700;
+							scientificTable.position.z = 0;
+							scientificTable.position.y = 200;
+							scientificTable.rotation.y = Math.PI * 1.5;
+
+							scene.add(scientificTable);
+							// hide spinner
+							document.getElementById( 'loader' ).style.display = 'none';
 
 
 							render();
+							
 
-						} );
-
-				const groundGeometry = new THREE.BoxGeometry( 15000, 15000, 50 );
-				ground = new THREE.Mesh( groundGeometry, MATERIAL.groundFileList.Mars );
-				ground.rotation.x = Math.PI * 0.5;
-				ground.receiveShadow = true;
-				scene.add( ground );
-
-
-			
-				/* Fin Couloir */
+							}, function (xhr) {
+								console.log((xhr.loaded/xhr.total * 100) + "% loaded sciTable");
+							}, function (error) {
+								console.log("An error occurred");
+							});
 
 				// create an AudioListener and add it to the camera
 				const listener = new THREE.AudioListener();
@@ -385,14 +445,152 @@
 
 				// load a sound and set it as the Audio object's buffer
 				const audioLoader = new THREE.AudioLoader();
+				audioLoader.load( './sounds/starwars-cantina.mp3', function( buffer ) {
+					sound.setBuffer( buffer );
+					sound.setLoop( true );
+					sound.setVolume( 0.10 );
+					sound.play();
+				});
 
+				// create the PositionalAudio object (passing in the listener)
+
+				let soundScifi = new THREE.Audio( listener );
+				soundScifi = new THREE.PositionalAudio( listener );
+                const oscillator = listener.context.createOscillator();
+                oscillator.type = 'sine';
+				oscillator.frequency.setValueAtTime( 144, soundScifi.context.currentTime );
+				oscillator.start( 0 );
+                songElement = document.getElementById( 'scifiTable' );
+                soundScifi.setMediaElementSource( songElement );
+                soundScifi.setRefDistance( 400 );
+                songElement.play();
+
+
+                //analyser of sound
+                analyser = new THREE.AudioAnalyser(sound, 32);
+                data = analyser.getAverageFrequency();
+
+
+				const groundGeometry = new THREE.BoxGeometry( 18000, 18000, 50 );
+				ground = new THREE.Mesh( groundGeometry, MATERIAL.groundFileList.Mars );
+				ground.rotation.x = Math.PI * 0.5;
+				ground.receiveShadow = true;
+				scene.add( ground );
+
+				// Textures pièce space
+
+				const groundRoomTexture = new THREE.TextureLoader().load('./textures/texture-sol.jpg');
+				const stairsTexture = new THREE.TextureLoader().load('./textures/texture-sol-stairs.jpg');
+				const wallTexture = new THREE.TextureLoader().load( './textures/texture-mur-navette.jpg' );
+
+
+				// Sol pièce
+				const groundRoomMaterial = new THREE.MeshPhongMaterial( { map:groundRoomTexture } );
+				const groundRoomGeometry = new THREE.BoxGeometry(5000, 5000, 50);
+				const groundRoom = new THREE.Mesh( groundRoomGeometry, groundRoomMaterial);
+				groundRoom.position.x = -4560;
+				groundRoom.position.y = 50;
+				groundRoom.position.z = 0;
+				groundRoom.rotation.x = Math.PI * 1.5;
+				groundRoom.receiveShadow = true;
+				scene.add( groundRoom );
+
+				const stairs1Material = new THREE.MeshPhongMaterial( { map:stairsTexture } );
+				const stairs1Geometry = new THREE.BoxGeometry(2500, 2500, 50);
+				const stairs1 = new THREE.Mesh( stairs1Geometry, stairs1Material);
+				stairs1.position.x = -4700;
+				stairs1.position.y = 100;
+				stairs1.position.z = 0;
+				stairs1.rotation.x = Math.PI * 1.5;
+				stairs1.receiveShadow = true;
+				scene.add( stairs1 );
+
+				const stairs2Material = new THREE.MeshPhongMaterial( { map:stairsTexture } );
+				const stairs2Geometry = new THREE.BoxGeometry(2000, 2000, 50);
+				const stairs2 = new THREE.Mesh( stairs2Geometry, stairs2Material);
+				stairs2.position.x = -4700;
+				stairs2.position.y = 150;
+				stairs2.position.z = 0;
+				stairs2.rotation.x = Math.PI * 1.5;
+				stairs2.receiveShadow = true;
+				scene.add( stairs2 );
+
+				const stairs3Material = new THREE.MeshPhongMaterial( { map:stairsTexture } );
+				const stairs3Geometry = new THREE.BoxGeometry(1500, 1500, 50);
+				const stairs3 = new THREE.Mesh( stairs3Geometry, stairs3Material);
+				stairs3.position.x = -4700;
+				stairs3.position.y = 200;
+				stairs3.position.z = 0;
+				stairs3.rotation.x = Math.PI * 1.5;
+				stairs3.receiveShadow = true;
+				scene.add( stairs3 );
+				stairs3.add(soundScifi);
+			
+
+
+				// Murs pièce
+
+				const wall1Material = new THREE.MeshPhongMaterial( { map:wallTexture } );
+				const wall1Geometry = new THREE.BoxGeometry(5000, 1800, 100);
+				const wall1 = new THREE.Mesh(wall1Geometry, wall1Material );
+				wall1.position.x = -4550;
+				wall1.position.y = 920;
+				wall1.position.z = -2550;
+				wall1.receiveShadow = true;
+				wall1.castShadow = true;
+				scene.add( wall1 );
+
+				const wall2Material = new THREE.MeshPhongMaterial( { map:wallTexture } );
+				const wall2Geometry = new THREE.BoxGeometry(5000, 1800, 100);
+				const wall2 = new THREE.Mesh(wall2Geometry, wall2Material );
+				wall2.position.x = -4550;
+				wall2.position.y = 920;
+				wall2.position.z = 2550;
+				wall2.receiveShadow = true;
+				wall2.castShadow = true;
+				scene.add( wall2 );
+
+				const wall3Material = new THREE.MeshPhongMaterial( { map:wallTexture } );
+				const wall3Geometry = new THREE.BoxGeometry(5000, 1800, 100);
+				const wall3 = new THREE.Mesh(wall3Geometry, wall3Material );
+				wall3.position.x = -7100;
+				wall3.position.y = 920;
+				wall3.position.z = 0;
+				wall3.rotation.y = Math.PI * 1.5;
+				wall3.receiveShadow = true;
+				wall3.castShadow = true;
+				scene.add( wall3 );
+
+				const wall4Material = new THREE.MeshPhongMaterial( { map:wallTexture } );
+				const wall4Geometry = new THREE.BoxGeometry(1850, 1800, 100);
+				const wall4 = new THREE.Mesh(wall4Geometry, wall4Material );
+				wall4.position.x = -2000;
+				wall4.position.y = 920;
+				wall4.position.z = 1650;
+				wall4.rotation.y = Math.PI * 1.5;
+				wall4.receiveShadow = true;
+				wall4.castShadow = true;
+				scene.add( wall4 );
+
+				const wall5Material = new THREE.MeshPhongMaterial( { map:wallTexture } );
+				const wall5Geometry = new THREE.BoxGeometry(1850, 1800, 100);
+				const wall5 = new THREE.Mesh(wall5Geometry, wall5Material );
+				wall5.position.x = -2000;
+				wall5.position.y = 920;
+				wall5.position.z = -1650;
+				wall5.rotation.y = Math.PI * 1.5;
+				wall5.receiveShadow = true;
+				wall5.castShadow = true;
+				scene.add( wall5 );
+
+				
 
 				// Orbit controls
 
 				controls = new OrbitControls( camera, renderer.domElement );
 				controls.addEventListener( 'change', render );
 				controls.minDistance = 20;
-				controls.maxDistance = 5000;
+				controls.maxDistance = 10000;
 				controls.enablePan = false;
 
 				/*controls = new FirstPersonControls( camera, renderer.domElement );
@@ -416,38 +614,7 @@
 				buildGui();
 			}
 
-				function onProgress( xhr ) {
-
-				if ( xhr.lengthComputable ) {
-
-					updateProgressBar( xhr.loaded / xhr.total );
-
-					console.log( Math.round( xhr.loaded / xhr.total * 100, 2 ) + '% downloaded' );
-
-				}
-
-				}
-
-				function showProgressBar() {
-
-				document.body.appendChild( progressBarDiv );
-
-				}
-
-				function hideProgressBar() {
-
-				document.body.removeChild( progressBarDiv );
-
-				}
-
-				function updateProgressBar( fraction ) {
-
-				progressBarDiv.innerText = 'Loading... ' + Math.round( fraction * 100, 2 ) + '%';
-
-				}
-
-
-			
+				
 
 			function animate() {
 
@@ -489,6 +656,8 @@
 			shadowCameraHelper.update();
 
 			renderer.render( scene, camera );
+
+			//scientificTable = analyser.getAverageFrequency()/256;
 
 			//controls.update( clock.getDelta() );
 
