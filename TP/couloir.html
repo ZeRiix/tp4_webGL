@@ -6,6 +6,7 @@
 		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 		<link rel="stylesheet" href="css/style.css">
 		<link rel="shortcut icon" type="image/png" href="./textures/favicon.jpg">
+		<link href="https://fonts.googleapis.com/css2?family=Russo+One&display=swap" rel="stylesheet">
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 		
 	</head>
@@ -59,12 +60,18 @@
 			progressBarDiv = document.createElement( 'div' );
 			progressBarDiv.innerText = 'Loading...';
 			progressBarDiv.style.fontSize = '3em';
-			progressBarDiv.style.color = '#ffffff';
+			progressBarDiv.style.color = '#424949';
 			progressBarDiv.style.display = 'block';
 			progressBarDiv.style.position = 'absolute';
+			progressBarDiv.style.fontFamily = 'Russo One';
 			progressBarDiv.style.top = '50%';
-			progressBarDiv.style.width = '100%';
+			progressBarDiv.style.width = '20%';
 			progressBarDiv.style.textAlign = 'center';
+			progressBarDiv.style.border = '2px outset';
+			progressBarDiv.style.borderColor = '#FFE81F';
+			progressBarDiv.style.backgroundColor = '#424949';
+			progressBarDiv.style.webkitTextStroke = '2px #FFE81F';
+			progressBarDiv.style.padding = '10px';
 			
 			function buildGui() {
 
@@ -324,6 +331,7 @@
 							
 							
 							scene.add(moon);
+							
 							
 							// hide spinner
 							document.getElementById( 'loader' ).style.display = 'none';
