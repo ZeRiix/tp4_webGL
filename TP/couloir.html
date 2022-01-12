@@ -6,6 +6,7 @@
 		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
 		<link rel="stylesheet" href="css/style.css">
 		<link rel="shortcut icon" type="image/png" href="./textures/favicon.jpg">
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 		
 	</head>
 	<body>
@@ -14,19 +15,24 @@
             <source src="./sounds/scifiTable.mp3" type="audio/mpeg">
         </audio>
 
+		<div id= "load">
+
+		</div>
+
 		<div id="container"></div>
 		<div id="loader"></div>
 		
 	
 		<script type="module">
+			
 
 			import * as THREE from '../build/three.module.js';
-			import { OrbitControls } from './jsm/controls/OrbitControls.js';
+			//import { OrbitControls } from './jsm/controls/OrbitControls.js';
 			import { GUI } from './jsm/libs/dat.gui.module.js';
 			import Stats from './jsm/libs/stats.module.js';
 			import * as MATERIAL from './material.module.js';
 			import { FBXLoader } from './jsm/loaders/FBXLoader.js';
-			//import { FirstPersonControls } from './jsm/controls/FirstPersonControls.js';
+			import { FirstPersonControls } from './jsm/controls/FirstPersonControls.js';
 			import { GLTFLoader } from './jsm/loaders/GLTFLoader.js';
 			
 			let camera, scene, renderer, controls, stats, planeteJupiter;
@@ -40,13 +46,26 @@
 			let showLightHelper = false;
 			var loader = new GLTFLoader();
 			let analyser, data, songElement;
+			let progressBarDiv;
+			let mesh, rep;
+			let position_porte;
+			let scid, sci;
 
 
 			const clock = new THREE.Clock();
 
-			let mixer;
-			
+			let mixer, mixer2;
 
+			progressBarDiv = document.createElement( 'div' );
+			progressBarDiv.innerText = 'Loading...';
+			progressBarDiv.style.fontSize = '3em';
+			progressBarDiv.style.color = '#ffffff';
+			progressBarDiv.style.display = 'block';
+			progressBarDiv.style.position = 'absolute';
+			progressBarDiv.style.top = '50%';
+			progressBarDiv.style.width = '100%';
+			progressBarDiv.style.textAlign = 'center';
+			
 			function buildGui() {
 
 			gui = new GUI();
@@ -116,11 +135,27 @@
 				
 				camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 100000 );
 				camera.position.set( 700, 5000, 5000 );
-				camera.position.z = 5000;
-				camera.position.x = -8000;
-				camera.position.y = 3000;
+				camera.position.z = 0;
+				camera.position.x = 2000;
+				camera.position.y = 400;
 
 				scene = new THREE.Scene();
+				
+				const porteTexture = new THREE.TextureLoader().load( './textures/porte.jpg' );
+				const geometry = new THREE.BoxGeometry( 100, 900, 1450 );
+				const material = new THREE.MeshBasicMaterial( { map: porteTexture } );
+				mesh = new THREE.Mesh( geometry, material );
+				scene.add( mesh );
+				mesh.position.x = -2050;
+				mesh.position.y = 400;
+
+				const geometryrep = new THREE.BoxGeometry( 30, 1, 1400 );
+				const materialrep = new THREE.MeshBasicMaterial( { color: 0xffffff } );
+				rep = new THREE.Mesh( geometryrep, materialrep );
+				scene.add( rep );
+				rep.position.x = -2000;
+				rep.position.y = 10;
+				position_porte = rep.position.clone();
 
 				renderer = new THREE.WebGLRenderer( { antialias: true } );
 				renderer.setPixelRatio( window.devicePixelRatio );
@@ -222,6 +257,10 @@
 				AxeHelper = new THREE.AxesHelper( 10000 );
 				if(showAxeHelper) scene.add(AxeHelper);
 
+				updateProgressBar(0);
+							
+				showProgressBar();
+
 				const corridor_loader = new GLTFLoader().setPath( './structure/' );
 						corridor_loader.load( 'corridor.glb', function ( gltf ) {
 
@@ -234,20 +273,14 @@
 							corridor.receiveShadow = true;
 							corridor.castShadow = true;
 
-
 							scene.add( corridor );
 							// hide spinner
 							document.getElementById( 'loader' ).style.display = 'none';
 
 
 							render();
-						
 
-						}, function (xhr) {
-								console.log((xhr.loaded/xhr.total * 100) + "% loaded corridor");
-							}, function (error) {
-								console.log("An error occurred");
-							});
+							}, onProgress);
 
 						const jupiter_loader = new GLTFLoader().setPath( './structure/' );
 						jupiter_loader.load( 'planete-jupiter.glb', function ( gltf ) {
@@ -258,11 +291,11 @@
 							jupiter.scale.z = 3000;
 							jupiter.position.x = 10000;
 							jupiter.position.z = 50000;
-							jupiter.position.y = 1000;
+							jupiter.position.y = 6000;
 							jupiter.receiveShadow = true;
 							jupiter.castShadow = true;
 							
-
+						
 
 							scene.add( jupiter );
 							// hide spinner
@@ -270,13 +303,8 @@
 
 
 							render();
-							
 
-						}, function (xhr) {
-								console.log((xhr.loaded/xhr.total * 100) + "% loaded jupiter");
-							}, function (error) {
-								console.log("An error occurred");
-							});
+							}, onProgress);
 
 							
 						const loader = new GLTFLoader().setPath( './structure/' );
@@ -289,9 +317,11 @@
 							moon.scale.z = 1000;
 							moon.position.x = 10000;
 							moon.position.z = -50000;
-							moon.position.y = 1000;
+							moon.position.y = 3000;
 							moon.receiveShadow = true;
 							moon.castShadow = true;
+
+							
 							
 							scene.add(moon);
 							
@@ -299,14 +329,10 @@
 							document.getElementById( 'loader' ).style.display = 'none';
 
 							render();
-							
 
-							}, function (xhr) {
-								console.log((xhr.loaded/xhr.total * 100) + "% loaded moon");
 							
-							}, function (error) {
-								console.log("An error occurred");
-							});
+						
+							}, onProgress);
 
 						
 						loader.load( 'box-Space.glb', function ( gltf ) {
@@ -320,19 +346,15 @@
 							boxes.position.y = -100;
 							boxes.positionreceiveShadow = true;
 							boxes.castShadow = true;
-							
+
+						
 							scene.add(boxes);
 							// hide spinner
 							document.getElementById( 'loader' ).style.display = 'none';
 
 							render();
-							
-
-						}, function (xhr) {
-								console.log((xhr.loaded/xhr.total * 100) + "% loaded boxes");
-							}, function (error) {
-								console.log("An error occurred");
-							});
+				
+							}, onProgress);
 						
 						loader.load( 'box-Space.glb', function ( gltf ) {
 
@@ -345,6 +367,8 @@
 							boxes2.position.y = -100;
 							boxes2.positionreceiveShadow = true;
 							boxes2.castShadow = true;
+
+							
 							
 							scene.add(boxes2);
 							// hide spinner
@@ -353,11 +377,7 @@
 							render();
 							
 
-						}, function (xhr) {
-								console.log((xhr.loaded/xhr.total * 100) + "% loaded boxes");
-							}, function (error) {
-								console.log("An error occurred");
-							});
+							}, onProgress);
 						
 						loader.load( 'box-Space.glb', function ( gltf ) {
 
@@ -370,6 +390,8 @@
 							boxes3.position.y = -100;
 							boxes3.positionreceiveShadow = true;
 							boxes3.castShadow = true;
+
+						
 							
 							scene.add(boxes3);
 							// hide spinner
@@ -378,11 +400,8 @@
 
 							render();
 							
-						}, function (xhr) {
-								console.log((xhr.loaded/xhr.total * 100) + "% loaded boxes");
-							}, function (error) {
-								console.log("An error occurred");
-							});
+			
+							}, onProgress);
 						
 						loader.load( 'box-Space.glb', function ( gltf ) {
 
@@ -396,6 +415,8 @@
 							boxes4.positionreceiveShadow = true;
 							boxes4.castShadow = true;
 							
+						
+							
 							scene.add(boxes4);
 							// hide spinner
 							document.getElementById( 'loader' ).style.display = 'none';
@@ -403,11 +424,8 @@
 							render();
 							
 
-						}, function (xhr) {
-								console.log((xhr.loaded/xhr.total * 100) + "% loaded boxes");
-							}, function (error) {
-								console.log("An error occurred");
-							});
+	
+							}, onProgress);
 
 						let scientificTable;
 
@@ -430,11 +448,68 @@
 							render();
 							
 
-							}, function (xhr) {
-								console.log((xhr.loaded/xhr.total * 100) + "% loaded sciTable");
-							}, function (error) {
-								console.log("An error occurred");
-							});
+						}, onProgress);
+
+						const fbxloader = new FBXLoader();
+						fbxloader.load( 'models/fbx/Talking.fbx', function ( hero ) {
+
+						mixer = new THREE.AnimationMixer( hero );
+
+						const action = mixer.clipAction( hero.animations[ 0 ] );
+						action.play();
+
+						hero.traverse( function ( child ) {
+
+							if ( child.isMesh ) {
+
+								child.castShadow = true;
+								child.receiveShadow = true;
+
+							}
+
+						} );
+
+						hero.position.x = -5300;
+						hero.position.y = 210;
+						hero.position.z = -560;
+						hero.rotation.y = Math.PI * 2;
+						hero.scale.x = 3;
+						hero.scale.y = 3;
+						hero.scale.z = 3;
+						
+						hideProgressBar();
+
+						scene.add( hero );
+					} , onProgress   );
+
+					fbxloader.load( 'models/fbx/Talking_az.fbx', function ( hero2 ) {
+
+					mixer2 = new THREE.AnimationMixer( hero2 );
+
+					const action = mixer2.clipAction( hero2.animations[ 0 ] );
+					action.play();
+
+					hero2.traverse( function ( child ) {
+
+						if ( child.isMesh ) {
+
+							child.castShadow = true;
+							child.receiveShadow = true;
+
+						}
+
+					} );
+
+					hero2.position.x = -4042;
+					hero2.position.y = 210;
+					hero2.position.z = 0;
+					hero2.rotation.y = 300;
+					hero2.scale.x = 3;
+					hero2.scale.y = 3;
+					hero2.scale.z = 3;
+
+					scene.add( hero2 );
+					}  , onProgress  );
 
 				// create an AudioListener and add it to the camera
 				const listener = new THREE.AudioListener();
@@ -482,7 +557,7 @@
 				const groundRoomTexture = new THREE.TextureLoader().load('./textures/texture-sol.jpg');
 				const stairsTexture = new THREE.TextureLoader().load('./textures/texture-sol-stairs.jpg');
 				const wallTexture = new THREE.TextureLoader().load( './textures/texture-mur-navette.jpg' );
-
+				const ntmTexture = new THREE.TextureLoader().load( './textures/porte-demi.png' );
 
 				// Sol pièce
 				const groundRoomMaterial = new THREE.MeshPhongMaterial( { map:groundRoomTexture } );
@@ -504,6 +579,64 @@
 				stairs1.rotation.x = Math.PI * 1.5;
 				stairs1.receiveShadow = true;
 				scene.add( stairs1 );
+
+				const plaMaterial = new THREE.MeshPhysicalMaterial( {
+					color : 0x3376ce,
+                    metalness: 0,
+                    roughness: 0,
+                    transmission: 1, 
+                    opacity : 1,
+                    transparent: true
+				 } );
+				const plaGeometry = new THREE.BoxGeometry(5300, 5000, 100);
+				const pla = new THREE.Mesh( plaGeometry, plaMaterial);
+				pla.position.x = -4700;
+				pla.position.y = 1500;
+				pla.position.z = 0;
+				pla.rotation.x = Math.PI * 1.5;
+				pla.receiveShadow = true;
+				scene.add( pla );
+
+				const vitreMaterial = new THREE.MeshPhysicalMaterial( {map: ntmTexture} );
+				const vitreGeometry = new THREE.BoxGeometry(90, 710, 1700);
+				const vitre = new THREE.Mesh( vitreGeometry, vitreMaterial);
+				vitre.position.x = -1990;
+				vitre.position.y = 1160;
+				vitre.position.z = 0;
+				vitre.receiveShadow = true;
+				scene.add( vitre );
+
+
+				const pla2Material = new THREE.MeshPhysicalMaterial( {map:stairsTexture} );
+				const pla2Geometry = new THREE.BoxGeometry(1000, 5000, 100);
+				const pla2 = new THREE.Mesh( pla2Geometry, pla2Material);
+				pla2.position.x = -4700;
+				pla2.position.y = 1499;
+				pla2.position.z = 0;
+				pla2.rotation.x = Math.PI * 1.5;
+				pla2.receiveShadow = true;
+				scene.add( pla2 );
+
+				const pla3Material = new THREE.MeshPhysicalMaterial( {map:stairsTexture} );
+				const pla3Geometry = new THREE.BoxGeometry(5200, 1000, 100);
+				const pla3 = new THREE.Mesh( pla3Geometry, pla3Material);
+				pla3.position.x = -4700;
+				pla3.position.y = 1499;
+				pla3.position.z = 0;
+				pla3.rotation.x = Math.PI * 1.5;
+				pla3.receiveShadow = true;
+				scene.add( pla3 );
+
+				const pla4Material = new THREE.MeshPhysicalMaterial( {map:stairsTexture} );
+				const pla4Geometry = new THREE.BoxGeometry(1500, 1500, 100);
+				const pla4 = new THREE.Mesh( pla4Geometry, pla4Material);
+				pla4.position.x = -4700;
+				pla4.position.y = 1498;
+				pla4.position.z = 0;
+				pla4.rotation.x = Math.PI * 1.5;
+				pla4.receiveShadow = true;
+				scene.add( pla4 );
+				
 
 				const stairs2Material = new THREE.MeshPhongMaterial( { map:stairsTexture } );
 				const stairs2Geometry = new THREE.BoxGeometry(2000, 2000, 50);
@@ -531,30 +664,30 @@
 				// Murs pièce
 
 				const wall1Material = new THREE.MeshPhongMaterial( { map:wallTexture } );
-				const wall1Geometry = new THREE.BoxGeometry(5000, 1800, 100);
+				const wall1Geometry = new THREE.BoxGeometry(5000, 1500, 100);
 				const wall1 = new THREE.Mesh(wall1Geometry, wall1Material );
 				wall1.position.x = -4550;
-				wall1.position.y = 920;
+				wall1.position.y = 760;
 				wall1.position.z = -2550;
 				wall1.receiveShadow = true;
 				wall1.castShadow = true;
 				scene.add( wall1 );
 
 				const wall2Material = new THREE.MeshPhongMaterial( { map:wallTexture } );
-				const wall2Geometry = new THREE.BoxGeometry(5000, 1800, 100);
+				const wall2Geometry = new THREE.BoxGeometry(5000, 1500, 100);
 				const wall2 = new THREE.Mesh(wall2Geometry, wall2Material );
 				wall2.position.x = -4550;
-				wall2.position.y = 920;
+				wall2.position.y = 760;
 				wall2.position.z = 2550;
 				wall2.receiveShadow = true;
 				wall2.castShadow = true;
 				scene.add( wall2 );
 
 				const wall3Material = new THREE.MeshPhongMaterial( { map:wallTexture } );
-				const wall3Geometry = new THREE.BoxGeometry(5000, 1800, 100);
+				const wall3Geometry = new THREE.BoxGeometry(5000, 1500, 100);
 				const wall3 = new THREE.Mesh(wall3Geometry, wall3Material );
 				wall3.position.x = -7100;
-				wall3.position.y = 920;
+				wall3.position.y = 760;
 				wall3.position.z = 0;
 				wall3.rotation.y = Math.PI * 1.5;
 				wall3.receiveShadow = true;
@@ -562,10 +695,10 @@
 				scene.add( wall3 );
 
 				const wall4Material = new THREE.MeshPhongMaterial( { map:wallTexture } );
-				const wall4Geometry = new THREE.BoxGeometry(1850, 1800, 100);
+				const wall4Geometry = new THREE.BoxGeometry(1850, 1500, 100);
 				const wall4 = new THREE.Mesh(wall4Geometry, wall4Material );
 				wall4.position.x = -2000;
-				wall4.position.y = 920;
+				wall4.position.y = 760;
 				wall4.position.z = 1650;
 				wall4.rotation.y = Math.PI * 1.5;
 				wall4.receiveShadow = true;
@@ -573,64 +706,137 @@
 				scene.add( wall4 );
 
 				const wall5Material = new THREE.MeshPhongMaterial( { map:wallTexture } );
-				const wall5Geometry = new THREE.BoxGeometry(1850, 1800, 100);
+				const wall5Geometry = new THREE.BoxGeometry(1850, 1500, 100);
 				const wall5 = new THREE.Mesh(wall5Geometry, wall5Material );
 				wall5.position.x = -2000;
-				wall5.position.y = 920;
+				wall5.position.y = 760;
 				wall5.position.z = -1650;
 				wall5.rotation.y = Math.PI * 1.5;
 				wall5.receiveShadow = true;
 				wall5.castShadow = true;
 				scene.add( wall5 );
 
+				const scidMaterial = new THREE.MeshPhongMaterial( { color: 0xffffff } );
+				const scidGeometry = new THREE.BoxGeometry(2, 2, 2);
+				const scid = new THREE.Mesh(scidGeometry, scidMaterial );
+				scid.position.x = -4700;
+				scid.position.z = 0;
+				scid.position.y = 200;
+				scid.receiveShadow = true;
+				scid.castShadow = true;
+				scene.add( scid );
+				sci = scid.position.clone();
 				
-
-				// Orbit controls
-
-				controls = new OrbitControls( camera, renderer.domElement );
-				controls.addEventListener( 'change', render );
-				controls.minDistance = 20;
-				controls.maxDistance = 10000;
-				controls.enablePan = false;
-
-				/*controls = new FirstPersonControls( camera, renderer.domElement );
-
-				controls.movementSpeed = 10000;
-				controls.lookSpeed = 10;
-				controls.noFly = true;
-				controls.lookVertical = true;
-                controls.lookHorizontal = true;
-
-                controls.keys = {
-	                LEFT: 81, //left arrow
-	                UP: 90, // up arrow
-	                RIGHT: 68, // right arrow
-	                BOTTOM: 83 // down arrow
-                }*/
-
+				controls = new FirstPersonControls( camera, renderer.domElement );
+				controls.movementSpeed = 3000;
+				controls.lookSpeed = 0.4;
 
 				window.addEventListener( 'resize', onWindowResize );
 
 				buildGui();
 			}
 
-				
+			function onProgress( xhr ) {
+
+			if ( xhr.lengthComputable ) {
+
+				updateProgressBar( xhr.loaded / xhr.total );
+
+				console.log( Math.round( xhr.loaded / xhr.total * 100, 2 ) + '% downloaded' );
+
+			}
+
+			}
+
+			function onError() {
+
+			const message = 'Error loading model';
+			progressBarDiv.innerText = message;
+			console.log( message );
+
+			}
+
+			function showProgressBar() {
+
+			document.body.appendChild( progressBarDiv );
+
+			}
+
+			function hideProgressBar() {
+
+			document.body.removeChild( progressBarDiv );
+
+			}
+			function updateProgressBar( fraction ) {
+
+			progressBarDiv.innerText = 'Loading...';
+
+			}
+							
 
 			function animate() {
 
+				const delta = clock.getDelta();
 
-			requestAnimationFrame( animate );
+				if ( mixer ) mixer.update( delta );
+				if ( mixer2 ) mixer2.update( delta );
 
-			//controls.update();
+				camera.position.y = 500;
 
-			renderer.render( scene, camera );
+				var origin = camera.position.clone();
+
+				if (origin.distanceTo(position_porte) < 1600) {
+					if (mesh.position.y < 1200) {
+						mesh.position.y += 12;
+					}
+				} else {
+					if (mesh.position.y > 400) {
+						mesh.position.y -= 12;
+					}
+				}
+				if (mesh.position.y > 400 || mesh.position.y == 400) {
+					if (origin.distanceTo(position_porte) < 200) {
+						camera.position.z -= 4;
+						camera.position.x -= 4;
+					}
+				}
+
+				if (camera.position.x < -2000 && camera.position.x > -7000) {
+					if (camera.position.z < -2400) {
+						camera.position.z += 10;
+					}
+					if (camera.position.z > 2400) {
+						camera.position.z -= 10;
+					}
+				}
+
+				if (camera.position.x > -2000 && camera.position.x < 6700) {
+					if (camera.position.z < -650) {
+						camera.position.z += 10;
+					}
+					if (camera.position.z > 650) {
+						camera.position.z -= 10;
+					}
+				}
+				if (camera.position.x < -7000) {
+					camera.position.x += 10;
+				}
+
+				if (origin.distanceTo(sci) < 500) {
+					camera.position.x -= 10;
+					camera.position.z -= 10;
+				}
+
+				console.log(origin);
+				//console.log(position_porte);
+				//console.log(origin.distanceTo(position_porte));
 
 
-			//scene.rotation.y += 0.001;
-
-
-			stats.update();
-
+				requestAnimationFrame( animate );
+				controls.update( clock.getDelta() );
+				renderer.render( scene, camera );
+				render();
+				stats.update();
 
 			}
 
@@ -642,7 +848,7 @@
 
 			renderer.setSize( window.innerWidth, window.innerHeight );
 
-			//controls.handleResize();
+			controls.handleResize();
 
 			}
 
@@ -654,7 +860,7 @@
 			lightHelper.update();
 
 			shadowCameraHelper.update();
-
+			controls.update(clock.getDelta());
 			renderer.render( scene, camera );
 
 			//scientificTable = analyser.getAverageFrequency()/256;
@@ -662,7 +868,6 @@
 			//controls.update( clock.getDelta() );
 
 			}
-
 
 
 	</script>
